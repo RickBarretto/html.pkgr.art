@@ -1,13 +1,27 @@
 import.version: 3.1.1 {unitt}!
 import {src/html}!
 it "renders a document" [
-    expects -> (fragment [\html [\body [\p "Hello"]]]) = "<!DOCTYPE html><html><body><p>Hello</p></body></html>"
+    expects -> (to :string fragment [\html [\body [\p "Hello"]]]) = "<!DOCTYPE html><html><body><p>Hello</p></body></html>"
 ]
 it "renders root attributes and captures the document once" [
     document: fragment [\html.lang: "en" [\head [\title "<&>"] \body []]]
-    expects -> document = {<!DOCTYPE html><html lang="en"><head><title>&lt;&amp;&gt;</title></head><body></body></html>}
+    expects -> (to :string document) = {<!DOCTYPE html><html lang="en"><head><title>&lt;&amp;&gt;</title></head><body></body></html>}
     reusable: markup\element "span" "Hello"
-    expects -> (fragment reusable) = "<span>Hello</span>"
+    expects -> (to :string fragment reusable) = "<span>Hello</span>"
     expects -> (to :string reusable) = "<span>Hello</span>"
+]
+it "composes fragment components with multiple roots and escaped text" [
+    component: function [name][fragment [h2 name p "Details & more"]]
+    node: fragment [section [component "<Ana>" fragment [] component "João"]]
+    expects -> is? :htmlMarkup node
+    expects -> (to :string node) = "<section><h2>&lt;Ana&gt;</h2><p>Details &amp; more</p><h2>João</h2><p>Details &amp; more</p></section>"
+]
+it "captures fragment effects once and distinguishes rendered strings from markup" [
+    calls: []
+    node: fragment [append 'calls "once" span "<&>"]
+    text: to :string node
+    expects -> (to :string fragment [node node]) = "<span>&lt;&amp;&gt;</span><span>&lt;&amp;&gt;</span>"
+    expects -> calls = ["once"]
+    expects -> (to :string fragment [text]) = "&lt;span&gt;&amp;lt;&amp;amp;&amp;gt;&lt;/span&gt;"
 ]
 unless key? args 'filename -> unitt\report 'full

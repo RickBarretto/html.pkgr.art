@@ -32,7 +32,7 @@ index: fragment html.lang: "en" [
         p "Framework examples load CSS from the internet. Chat replies are local demonstrations."
     ]
 ]
-write index outputRoot ++ "/index.html"
+write to :string index outputRoot ++ "/index.html"
 print "Rendered examples into .preview/"
 
 unless arg = ["build"] [

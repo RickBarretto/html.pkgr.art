@@ -13,8 +13,8 @@ print fragment html [
 ]
 ```
 
-Tag helpers return typed markup values. `fragment` renders a DSL block or a
-markup value to a compact string; `to :string` also renders a markup value.
+Tag helpers return typed markup values. `fragment` combines a DSL block or a
+markup value into typed markup without a wrapper element. Print it directly, or use `to :string` for a compact string.
 Strings are escaped; nested markup is preserved. Blocks evaluate once.
 Use `markup\element "my-widget" "Hello"` for custom tags.
 Dictionary arguments supply attributes on empty elements. Dynamic attributes
@@ -22,11 +22,11 @@ override dictionary values, underscores become hyphens, and null values are
 omitted. HTML boolean attributes accept logical values; ARIA logical values
 remain quoted strings.
 
-For reusable components, return markup from a function:
+For reusable components, return a fragment from a function:
 
 ```art
 import {src/html}!
-greeting: function [name][markup\element "p" name]
+greeting: function [name][fragment [p name]]
 print fragment [greeting "Arturo"]
 ```
 
@@ -100,7 +100,7 @@ functions. Replace `html\...` with `markup\...`. Within fragment and element
 child blocks, use official tag names directly. These local helpers take
 precedence over built-ins and restore caller bindings when evaluation returns.
 
-Tag results are markup objects rather than strings. Render with `fragment` or
-explicit string conversion. Output is compact and text is escaped. Replace
+Tag and fragment results are markup objects rather than strings. Print them or
+render with `to :string`. Output is compact and text is escaped. Replace
 intentional HTML strings with `markup\raw`. Void tags emit no closing tag;
 dictionaries no longer request self-closing tags. HTML4 mode is removed.

@@ -1,9 +1,11 @@
 import {src/html}!
 
 feature: function [heading description][
-  markup\article [
-    h3 heading
-    p description
+  fragment [
+    article [
+      h3 heading
+      p description
+    ]
   ]
 ]
 

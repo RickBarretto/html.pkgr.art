@@ -1,7 +1,7 @@
 import.version: 3.1.1 {unitt}!
 import {src/html}!
 it "renders the requested scoped example" [
-    expects -> (fragment [body [h1.class: "xl" "Hello, World" article -> div.class: "flex-col" ["Children"]]]) = {<body><h1 class="xl">Hello, World</h1><article><div class="flex-col">Children</div></article></body>}
+    expects -> (to :string fragment [body [h1.class: "xl" "Hello, World" article -> div.class: "flex-col" ["Children"]]]) = {<body><h1 class="xl">Hello, World</h1><article><div class="flex-col">Children</div></article></body>}
 ]
 it "exercises the entire canonical inventory in qualified and scoped form" [
     loop markup\tags 'tag [
@@ -11,49 +11,49 @@ it "exercises the entire canonical inventory in qualified and scoped form" [
         scoped: @[to :word name []]
         ; Parse paths as code; words containing a backslash are not paths.
         actual: do ~{fragment [markup\|name| []]}
-        expects.be: 'equal? @[actual expected]
+        expects.be: 'equal? @[(to :string actual) expected]
         actual: fragment scoped
-        expects.be: 'equal? @[actual expected]
+        expects.be: 'equal? @[(to :string actual) expected]
     ]
-    expects -> (fragment html []) = "<!DOCTYPE html><html></html>"
+    expects -> (to :string fragment html []) = "<!DOCTYPE html><html></html>"
 ]
 it "forwards and isolates entry and nested attributes" [
-    expects -> (fragment html.lang: "en" [body.id: "b" [input.disabled: true.data_state: false #[disabled: false] p.title: {"<&} "<&>"]]) = {<!DOCTYPE html><html lang="en"><body id="b"><input data-state="false" disabled><p title="&quot;&lt;&amp;">&lt;&amp;&gt;</p></body></html>}
-    expects -> (fragment body.class: "c" [div []]) = {<body class="c"><div></div></body>}
-    expects -> (fragment body []) = "<body></body>"
+    expects -> (to :string fragment html.lang: "en" [body.id: "b" [input.disabled: true.data_state: false #[disabled: false] p.title: {"<&} "<&>"]]) = {<!DOCTYPE html><html lang="en"><body id="b"><input data-state="false" disabled><p title="&quot;&lt;&amp;">&lt;&amp;&gt;</p></body></html>}
+    expects -> (to :string fragment body.class: "c" [div []]) = {<body class="c"><div></div></body>}
+    expects -> (to :string fragment body []) = "<body></body>"
 ]
 it "restores builtins and caller bindings across repeated nested scopes" [
     p: "caller"
     loop 1..3 'n [
-        expects -> (fragment [div [select "choice" map "image"]]) = "<div><select>choice</select><map>image</map></div>"
+        expects -> (to :string fragment [div [select "choice" map "image"]]) = "<div><select>choice</select><map>image</map></div>"
         expects -> p = "caller"
         expects -> (div 8 2) = 4
         expects -> (map [1 2] 'x [x + 1]) = [2 3]
     ]
-    expects -> (fragment [div [fragment [span "inner"]]]) = "<div>&lt;span&gt;inner&lt;/span&gt;</div>"
+    expects -> (to :string fragment [div [fragment [span "inner"]]]) = "<div><span>inner</span></div>"
 ]
 it "supports components independent objects control flow and bounded collections" [
-    component: function [value][markup\article [h2 value]]
+    component: function [value][fragment [article [h2 value]]]
     independent: to :htmlDsl []!
-    expects -> (fragment independent\div [component "Olá" if false [p "no"] raw "<br>"]) = "<div><article><h2>Olá</h2></article><br></div>"
+    expects -> (to :string fragment independent\div [component "Olá" if false [p "no"] raw "<br>"]) = "<div><article><h2>Olá</h2></article><br></div>"
     calls: []
     node: body [div [article [section [p [append 'calls "once" "text"]]]]]
     expects -> calls = ["once"]
-    expects -> (fragment node) = "<body><div><article><section><p>text</p></section></article></div></body>"
+    expects -> (to :string fragment node) = "<body><div><article><section><p>text</p></section></article></div></body>"
     result: fragment [ul [loop 1..200 'n [li "x"]]]
-    expects -> result = "<ul>" ++ (repeat "<li>x</li>" 200) ++ "</ul>"
+    expects -> (to :string result) = "<ul>" ++ (repeat "<li>x</li>" 200) ++ "</ul>"
 ]
 it "evaluates deep nested scopes once and preserves bindings" [
     effects: []
     node: body [div [div [div [div [div [div [div [div [div [div [div [div [div [div [div [div [div [div [div [div [div [div [div [div [div [div [div [div [div [div [p [append 'effects "leaf" "深い"]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]
     expected: "<body>" ++ (repeat "<div>" 30) ++ "<p>深い</p>" ++ (repeat "</div>" 30) ++ "</body>"
-    expects -> (fragment node) = expected
-    expects -> (fragment node) = expected
+    expects -> (to :string fragment node) = expected
+    expects -> (to :string fragment node) = expected
     expects -> effects = ["leaf"]
 ]
 it "renders a full document with mixed content" [
     actual: fragment html [head [meta.charset: "utf-8" #[] title "Demo"] body [form [label.for: "q" "Query" input.id: "q" #[] button "Go"] table [thead [tr [th "Name"]] tbody [tr [td ["Olá " strong "world" "!"]]]]]]
-    expects -> actual = {<!DOCTYPE html><html><head><meta charset="utf-8"><title>Demo</title></head><body><form><label for="q">Query</label><input id="q"><button>Go</button></form><table><thead><tr><th>Name</th></tr></thead><tbody><tr><td>Olá <strong>world</strong>!</td></tr></tbody></table></body></html>}
+    expects -> (to :string actual) = {<!DOCTYPE html><html><head><meta charset="utf-8"><title>Demo</title></head><body><form><label for="q">Query</label><input id="q"><button>Go</button></form><table><thead><tr><th>Name</th></tr></thead><tbody><tr><td>Olá <strong>world</strong>!</td></tr></tbody></table></body></html>}
 ]
 it "rejects scoped invalid content in isolated processes" [
     loop [

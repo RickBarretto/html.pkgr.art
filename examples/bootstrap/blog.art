@@ -1,14 +1,16 @@
 import {src/html}!
 
 post: function [heading published summary][
-  markup\article.class: "card shadow-sm mb-4" [
-    div.class: "card-body p-4" [
-      h2.class: "card-title h3" heading
+  fragment [
+    article.class: "card shadow-sm mb-4" [
+      div.class: "card-body p-4" [
+        h2.class: "card-title h3" heading
 
-      time.class: "text-body-secondary small"
-        .datetime: published published
+        time.class: "text-body-secondary small"
+          .datetime: published published
 
-      p.class: "card-text mt-3" summary
+        p.class: "card-text mt-3" summary
+      ]
     ]
   ]
 ]

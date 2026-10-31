@@ -4,9 +4,9 @@ Import with `import {src/html}!`. Supported names follow the official names disc
 
 ## Entry points and qualified helpers
 
-`fragment content` returns a compact escaped string. `html content` returns typed document markup with `<!DOCTYPE html>`. `body content` returns typed body markup. Both callable entry functions forward generic attributes. Every element accepts exactly one content argument: a string, typed markup, an eagerly evaluated child block, or an attribute dictionary for an empty element. Void elements still require that argument: use `[]`, `""`, or `#[]`.
+`fragment content` returns typed markup without a wrapper element. Text is escaped and nested markup is preserved. Print it directly or use `to :string fragment content` for a compact string. `html content` returns typed document markup with `<!DOCTYPE html>`. `body content` returns typed body markup. Both callable entry functions forward generic attributes. Every element accepts exactly one content argument: a string, typed markup, an eagerly evaluated child block, or an attribute dictionary for an empty element. Void elements still require that argument: use `[]`, `""`, or `#[]`.
 
-`markup` is the public DSL object. `markup\p "Hello"`, `markup\element "my-widget" [span "Hello"]`, and `markup\raw "<b>Trusted</b>"` work outside DSL scopes. `markup\html []` includes the doctype; `markup\element "html" []` serializes only the element. `to :string node` renders typed markup. `fragment node` also renders it. Markup captures its content once; rendering it again does not rerun child blocks.
+`markup` is the public DSL object. `markup\p "Hello"`, `markup\element "my-widget" [span "Hello"]`, and `markup\raw "<b>Trusted</b>"` work outside DSL scopes. `markup\html []` includes the doctype; `markup\element "html" []` serializes only the element. `to :string node` renders typed markup. `fragment node` wraps it as composable markup. Markup captures its content once; rendering it again does not rerun child blocks.
 
 All fragment blocks and element child blocks bind official tag helpers plus `element` and `raw` locally. Official names take precedence over caller bindings and built-ins such as `div`, `map`, `select`, and `input`. Caller bindings and built-ins are restored when the scope returns. Save any needed built-in behavior under another name before entering the DSL. Assignments in DSL blocks follow function scope; use a shared collection for intentional observable effects.
 
@@ -22,7 +22,7 @@ print fragment [
 `->` wraps one expression as a child block. Explicit blocks support multiple children, nested elements, loops, and conditionals. Null results are ignored; other children must be strings or typed markup.
 
 ```art
-card: function [name][markup\article [h2 name]]
+card: function [name][fragment [article [h2 name]]]
 print fragment [
     div [
         "People: "
@@ -51,7 +51,7 @@ The library does not sanitize JavaScript, CSS, or URLs. It rejects malformed tag
 
 ## Migration and scope
 
-Replace the old public object `html` with `markup`: `html\p` becomes `markup\p`, `html\element` becomes `markup\element`, and `html\raw` becomes `markup\raw`. `html` is now a callable document entry function. Prefer unqualified names inside child blocks. Legacy backslash shorthand is no longer the documented interface. Tag results are typed markup rather than plain strings. No aliases or specialized positional attribute arguments are provided.
+Replace the old public object `html` with `markup`: `html\p` becomes `markup\p`, `html\element` becomes `markup\element`, and `html\raw` becomes `markup\raw`. `html` is now a callable document entry function. Prefer unqualified names inside child blocks. Legacy backslash shorthand is no longer the documented interface. Tag and fragment results are typed markup rather than plain strings. Replace string uses of `fragment content` with `to :string fragment content`; nested fragments now preserve their HTML. No aliases or specialized positional attribute arguments are provided.
 
 Independent initialized objects can be created with `other: to :htmlDsl []!`; they expose the same qualified methods and scoped child evaluation. Helpers are generated from the same canonical inventory (`markup\tags`).
 

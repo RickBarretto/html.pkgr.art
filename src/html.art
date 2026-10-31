@@ -160,7 +160,7 @@ fragment: $[content][
     values: (block? content)? [markup\_process content] [@[content]]
     rendered: new ""
     ignored: @[loop values 'value [rendered: rendered ++ serializeHtml value]]
-    rendered
+    to :htmlMarkup @[rendered]
 ]!
 html: function [content][markup\html content]
 body: function [content][markup\body content]
