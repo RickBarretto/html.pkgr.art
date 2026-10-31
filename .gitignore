@@ -1,3 +1,6 @@
 # Project-local skills from the private arturo-lang/skills repository.
 /.agents/skills/
 /.unitt/
+
+# Generated example preview site.
+/.preview/

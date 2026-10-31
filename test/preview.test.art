@@ -1,0 +1,21 @@
+import.version: 3.1.1 {unitt}!
+
+it "builds the preview gallery without loading Lanx or starting a server" [
+    result: execute.code.args: ["--no-color" "preview.art" "build"] "arturo"
+    expects -> zero? result\code
+    gallery: read ".preview/index.html"
+    expects -> contains? gallery "<!DOCTYPE html>"
+    loop select read.lines "examples/catalog.txt" 'entry [not? empty? entry] 'examplePath [
+        actual: read ".preview/" ++ examplePath ++ ".html"
+        expected: read "examples/expected/" ++ examplePath ++ ".html"
+        expects.be: 'equal? @[actual expected]
+        expects -> contains? gallery {href="} ++ examplePath ++ {.html"}
+    ]
+]
+
+it "rejects unsupported preview arguments before starting a server" [
+    result: execute.code.args: ["--no-color" "preview.art" "invalid"] "arturo"
+    expects -> not? zero? result\code
+]
+
+unless key? args 'filename -> unitt\report 'full

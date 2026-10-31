@@ -1,0 +1,40 @@
+import {src/html}!
+
+; Generate first so package or rendering failures never start a partial preview.
+ensure.that: "Use: arturo preview.art [build]" -> or? empty? arg arg = ["build"]
+examplePaths: select read.lines "examples/catalog.txt" 'entry [not? empty? entry]
+outputRoot: ".preview"
+write.directory null outputRoot
+loop examplePaths 'examplePath [
+    result: execute.code.args: @["--no-color" "examples/" ++ examplePath ++ ".art"] "arturo"
+    unless zero? result\code [
+        print result\output
+        panic "Could not render example: " ++ examplePath
+    ]
+    category: first split.by: "/" examplePath
+    write.directory null outputRoot ++ "/" ++ category
+    write result\output outputRoot ++ "/" ++ examplePath ++ ".html"
+]
+index: fragment html.lang: "en" [
+    head [
+        meta.charset: "utf-8" #[]
+        meta.name: "viewport".content: "width=device-width, initial-scale=1" #[]
+        title "HTML DSL examples"
+        style [raw {
+            body { max-width: 52rem; margin: auto; padding: 2rem; font: 1.1rem/1.7 system-ui; color: #243a32; background: #f8faf7; }
+            a { color: #175d45; } li { margin: .6rem 0; } code { background: #e5eee7; padding: .2rem; }
+        }]
+    ]
+    body [
+        h1 "HTML DSL examples"
+        p "Choose an example to preview its generated HTML."
+        ul [loop examplePaths 'examplePath [li [a.href: examplePath ++ ".html" examplePath]]]
+        p "Framework examples load CSS from the internet. Chat replies are local demonstrations."
+    ]
+]
+write index outputRoot ++ "/index.html"
+print "Rendered examples into .preview/"
+
+unless arg = ["build"] [
+    do "scripts/serve-preview.art"
+]
