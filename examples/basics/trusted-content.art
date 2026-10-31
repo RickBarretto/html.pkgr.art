@@ -1,0 +1,8 @@
+import {src/html}!
+
+; Raw values must come from trusted sources, particularly script/style bodies.
+print fragment [
+    style [raw "p > strong { color: navy; }"]
+    script [raw "console.log('Hello <world>');"]
+    p ["Escaped: <strong>text</strong>. Trusted: " raw "<strong>markup</strong>"]
+]

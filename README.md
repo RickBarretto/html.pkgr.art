@@ -35,7 +35,21 @@ raw markup. Only use trusted content: this library does not sanitize URLs,
 JavaScript, or CSS. SVG/MathML serialization, HTML4, and content-model validation
 are outside this release's supported scope.
 
-Run the example with `arturo --no-color exp.art`.
+Run the introductory example with `arturo --no-color exp.art`.
+
+Runnable [examples](examples/README.md) include a blog, landing page, and
+ChatGPT-style chat interface, plus Tailwind, daisyUI, and Bootstrap examples.
+Smaller DSL demonstrations live in [examples/basics](examples/basics/). Each
+example has a checked-in HTML output in [examples/expected](examples/expected/).
+
+```sh
+arturo --no-color examples/pages/blog.art > /tmp/blog.html
+arturo --no-color test.art examples
+```
+
+The example suite runs each script in a separate process and checks its exit
+status and exact output, including the trailing newline. It also runs as part
+of the full test suite and existing CI workflow.
 
 Development requires Unitt 3.1.1 on PATH:
 
