@@ -18,10 +18,10 @@ serializeHtml: function [value][
     escapeHtml value
 ]
 
-define :html [
+define :htmlDsl [
 
     init: method [][
-        elements: [
+        this\tags: [
             ; Main
             body head
 
@@ -38,14 +38,14 @@ define :html [
             button datalist fieldset form input label legend meter optgroup
             option output progress select textarea
 
-            ; Inline Text 
-            a abbr b bdi bdo br cite code data dfn em i kbd mark q s rp rt 
+            ; Inline Text
+            a abbr b bdi bdo br cite code data dfn em i kbd mark q s rp rt
             ruby samp small span strong sub sup time u var wbr
 
             ; Interactives
             details dialog summary
 
-            ; Metadata Content 
+            ; Metadata Content
             base link meta title style
 
             ; Multimedia
@@ -55,7 +55,7 @@ define :html [
             canvas noscript script
 
             ; Content Sectioning
-            address article aside footer header h1 h2 h3 h4 h5 h6 hgroup main 
+            address article aside footer header h1 h2 h3 h4 h5 h6 hgroup main
             nav section search
 
             ; Tables
@@ -64,15 +64,31 @@ define :html [
             ; Text Content
             blockquote dd div dl dt figcaption figure hr li menu ol p pre ul
         ]
-        
-        loop elements 'el [
+
+        loop this\tags 'el [
             body: [\element x]
             insert 'body 1 to :literal el
-            this\[el]: method [x] body
+            this\[el]: method.public [x] body
         ]
     ]
 
     _process: method [content][
+        ; Bind helpers in this method scope; capture the owning object for nesting.
+        target: this
+        bindings: new this\tags
+        append 'bindings 'element
+        append 'bindings 'raw
+        append 'bindings 'html
+
+        loop bindings '_tag [
+            helperBody: [target\element x]
+            insert 'helperBody 1 to :literal _tag
+            if _tag = 'element [helperBody: [target\element tag x]]
+            if _tag = 'raw [helperBody: [target\raw x]]
+            if _tag = 'html [helperBody: [target\html x]]
+            helperArgs: (_tag = 'element)? [[tag x]] [[x]]
+            let to :literal _tag function.import: [target] helperArgs helperBody
+        ]
         @content
     ]
 
@@ -80,9 +96,14 @@ define :html [
         replace content "_" "-"
     ]
 
-    raw: method [value :string][to :htmlRaw @[value]]
+    raw: method.public [value :string][to :htmlRaw @[value]]
 
     element: method.public [tag :string :literal content][
+        ; Empty runtime loops can leave nulls; expose exactly one markup value.
+        last @[\_element tag content]
+    ]
+
+    _element: method [tag :string :literal content][
         tag: lower to :string tag
         ensure.that: "Invalid HTML tag name" -> match? tag {^[a-z][a-z0-9-]*$}
         normalized: #[]
@@ -106,22 +127,26 @@ define :html [
         ]
         children: []
         unless dictionary? content [
-            children: (block? content)? [@content] [@[content]]
+            children: (block? content)? [\_process content] [@[content]]
         ]
-        children: select children 'child [not? null? child]
+        ; Avoid built-ins whose official tag names are rebound by the caller.
+        filtered: []
+        ignored: @[loop children 'child [unless null? child [append 'filtered child]]]
+        children: filtered
         void: in? tag ["area" "base" "br" "col" "embed" "hr" "img" "input" "link" "meta" "source" "track" "wbr"]
         if void [
             ensure.that: "Void elements cannot have children" -> or? empty? children children = [""]
             return to :htmlMarkup @[~"<|tag||attributes|>"]
         ]
         if in? tag ["script" "style"] [
-            loop children 'child [ensure.that: "Use html raw for trusted script/style content" -> or? child = "" is? :htmlRaw child]
+            loop children 'child [ensure.that: "Use markup raw for trusted script/style content" -> or? child = "" is? :htmlRaw child]
         ]
-        rendered: join map children 'child [serializeHtml child]
+        rendered: new ""
+        ignored: @[loop children 'child [rendered: rendered ++ serializeHtml child]]
         to :htmlMarkup @[~"<|tag||attributes|>|rendered|</|tag|>"]
     ]
 
-    html: method [page :block][
+    html: method.public [page][
         html4: attr 'html4
         ensure.that: "HTML4 mode is no longer supported" -> null? html4
         document: "<!DOCTYPE html>" ++ to :string \element 'html page
@@ -130,8 +155,12 @@ define :html [
 
 ]
 
-html: to :html []
+markup: to :htmlDsl []
 fragment: $[content][
-    values: (block? content)? [html\_process content] [@[content]]
-    join map values 'value [serializeHtml value]
+    values: (block? content)? [markup\_process content] [@[content]]
+    rendered: new ""
+    ignored: @[loop values 'value [rendered: rendered ++ serializeHtml value]]
+    rendered
 ]!
+html: function [content][markup\html content]
+body: function [content][markup\body content]

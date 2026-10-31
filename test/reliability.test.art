@@ -1,6 +1,6 @@
 import.version: 3.1.1 {unitt}!
 import {src/html}!
-other: to :html []!
+other: to :htmlDsl []!
 
 describe "serialization boundaries" [
     it "handles empty content and preserves whitespace and Unicode" [
@@ -14,14 +14,14 @@ describe "serialization boundaries" [
         ; Isolate runtime exceptions: caught method errors affect subsequent
         ; method calls on the supported Arturo build.
         loop [
-            {html\element {div onclick="x"} ""}
-            {html\element "p" #["bad name": "x"]}
-            {html\element "p" #[class: ["a" "b"]]}
-            {html\element "p" 42}
-            {html\element "br" "child"}
-            {html\element "script" "alert(1)"}
-            {html\element "style" "p {}"}
-            {html\element "script" [html\element "p" "nested"]}
+            {markup\element {div onclick="x"} ""}
+            {markup\element "p" #["bad name": "x"]}
+            {markup\element "p" #[class: ["a" "b"]]}
+            {markup\element "p" 42}
+            {markup\element "br" "child"}
+            {markup\element "script" "alert(1)"}
+            {markup\element "style" "p {}"}
+            {markup\element "script" [markup\element "p" "nested"]}
             {fragment [\html.html4 []]}
         ] 'code [
             command: "import {src/html}! " ++ code
@@ -32,13 +32,13 @@ describe "serialization boundaries" [
     
     it "serializes every void element without a closing tag" [
         loop [area base br col embed hr img input link meta source track wbr] 'tag [
-            result: to :string html\element to :literal tag #[]
+            result: to :string markup\element to :literal tag #[]
             expected: "<" ++ (to :string tag) ++ ">"
             expects.be: 'equal? @[result expected]
         ]
     ]
     it "keeps trusted raw values distinct from text and normal markup" [
-        rawValue: html\raw "<b>trusted</b>"
+        rawValue: markup\raw "<b>trusted</b>"
         expects -> (fragment rawValue) = "<b>trusted</b>"
         expects -> (fragment "<b>text</b>") = "&lt;b&gt;text&lt;/b&gt;"
         expects -> (fragment [\script ""]) = "<script></script>"
@@ -50,19 +50,19 @@ describe "serialization boundaries" [
 describe "composition and isolation" [
     it "renders repeatedly without repeating effects or retaining mutable inputs" [
         source: "first"
-        node: html\element "p" source
+        node: markup\element "p" source
         source: "second"
         expects -> (fragment node) = "<p>first</p>"
         expects -> (fragment node) = "<p>first</p>"
         calls: []
-        node: html\element "div" [append 'calls "called" "text"]
+        node: markup\element "div" [append 'calls "called" "text"]
         expects -> (fragment node) = "<div>text</div>"
         expects -> (fragment node) = "<div>text</div>"
         expects -> calls = ["called"]
     ]
     it "does not leak attributes between elements or instances" [
-        firstNode: html\element.id: "first" "p" ""
-        secondNode: html\element "p" ""
+        firstNode: markup\element.id: "first" "p" ""
+        secondNode: markup\element "p" ""
         expects -> (fragment firstNode) = {<p id="first"></p>}
         expects -> (fragment secondNode) = "<p></p>"
         independent: to :string other\element "p" ""

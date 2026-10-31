@@ -1,2 +1,8 @@
 import {src/html}!
-print fragment [\html [\head [\title "Hello"] \body [\h1 "Hello, Arturo!"]]]
+print fragment html.lang: "en" [
+    head [meta.charset: "utf-8" #[] title "Hello"]
+    body [
+        h1.class: "xl" "Hello, World"
+        article -> div.class: "flex-col" ["Children"]
+    ]
+]
