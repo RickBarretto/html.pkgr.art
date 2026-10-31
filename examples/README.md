@@ -18,7 +18,34 @@ relative path.
 | `daisyui/` | `chat.art` | Chat interface using daisyUI buttons, navigation, and form controls |
 | `bootstrap/` | `blog.art` | Blog using Bootstrap's responsive grid and cards |
 
-## Run and preview
+## Preview gallery with Lanx
+
+From the repository root:
+
+```sh
+arturo --no-color preview.art
+```
+
+The script imports Lanx 0.2.0, automatically installing it and any missing
+dependencies on first use. No separate installation step is required.
+
+Open **http://localhost:18966/** and choose an example. Stop the server with
+**Ctrl+C**. Rerun the command after editing an example to regenerate its HTML.
+Lanx serves the generated `.preview/` folder, which is ignored by Git.
+It is a development server; it may listen on network interfaces beyond localhost.
+
+To generate the gallery without installing Lanx or starting a listener:
+
+```sh
+arturo --no-color preview.art build
+```
+
+Preview generation and output tests share the paths in `examples/catalog.txt`.
+Only HTML output goes into the served directory; the repository source is not
+served. Lanx is a development dependency and does not change the DSL's runtime
+dependencies.
+
+## Run and preview individual pages
 
 ```sh
 arturo --no-color examples/basics/scoped.art
@@ -63,4 +90,5 @@ the existing CI suite. They verify serialization; they do not load CDN assets or
 exercise browser layout or JavaScript events.
 
 When changing an example, review its rendered HTML and update the corresponding
-expected file deliberately. Add new example paths to `test/examples.test.art`.
+expected file deliberately. Add new example paths to `examples/catalog.txt` to include them in both
+the gallery and output tests.

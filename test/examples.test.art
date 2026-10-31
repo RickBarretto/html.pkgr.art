@@ -1,12 +1,7 @@
 import.version: 3.1.1 {unitt}!
 
 ; Execute each example as users do, checking status and exact stdout.
-loop [
-    "basics/scoped" "basics/document" "basics/components"
-    "basics/attributes" "basics/trusted-content"
-    "pages/blog" "pages/landing" "pages/chat"
-    "tailwind/landing" "daisyui/chat" "bootstrap/blog"
-] 'exampleName [
+loop select read.lines "examples/catalog.txt" 'entry [not? empty? entry] 'exampleName [
     it "matches expected output: " ++ exampleName [
         result: execute.code.args: @["--no-color" "examples/" ++ exampleName ++ ".art"] "arturo"
         expected: read "examples/expected/" ++ exampleName ++ ".html"

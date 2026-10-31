@@ -1,0 +1,6 @@
+import.version: 0.2.0 "lanx"!
+server: to :lanx []!
+server\root: ".preview"
+server\port: 18966
+print "Preview: http://localhost:18966/ — stop with Ctrl+C"
+server\start

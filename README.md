@@ -42,6 +42,32 @@ ChatGPT-style chat interface, plus Tailwind, daisyUI, and Bootstrap examples.
 Smaller DSL demonstrations live in [examples/basics](examples/basics/). Each
 example has a checked-in HTML output in [examples/expected](examples/expected/).
 
+To view the examples in your browser, run from the repository root:
+
+```sh
+arturo --no-color preview.art
+```
+
+The script renders all examples, then starts **Lanx**, Arturo's static-file
+server. Its versioned import automatically installs Lanx 0.2.0 and any missing
+dependencies on first use; no separate installation command is needed.
+
+Open **http://localhost:18966/** and choose an example. Keep the command running
+while browsing, and press **Ctrl+C** to stop the server. After editing an
+example, stop and rerun the command to regenerate the pages.
+
+To generate the gallery without starting Lanx:
+
+```sh
+arturo --no-color preview.art build
+```
+
+Generated HTML is written to `.preview/`, which is ignored by Git. Build-only
+mode does not import or install Lanx. Framework styling requires internet access;
+the chat examples provide local demo replies.
+
+You can also render an individual page or run the example output tests:
+
 ```sh
 arturo --no-color examples/pages/blog.art > /tmp/blog.html
 arturo --no-color test.art examples
