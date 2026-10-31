@@ -2,8 +2,11 @@ import {src/html}!
 
 ; Official tag names are local to the fragment and every child block.
 print fragment [
-    body [
-        h1.class: "xl" "Hello, World"
-        article -> div.class: "flex-col" ["Children"]
+  body [
+    h1.class: "xl" "Hello, World"
+
+    article -> div.class: "flex-col" [
+      "Children"
     ]
+  ]
 ]

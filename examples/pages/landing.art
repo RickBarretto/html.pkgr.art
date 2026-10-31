@@ -1,41 +1,79 @@
 import {src/html}!
 
-feature: function [heading description][markup\article [h3 heading p description]]
+feature: function [heading description][
+  markup\article [
+    h3 heading
+    p description
+  ]
+]
 
 print fragment html.lang: "en" [
-    head [
-        meta.charset: "utf-8" #[]
-        meta.name: "viewport".content: "width=device-width, initial-scale=1" #[]
-        title "Gather — make space for good work"
-        style [raw {
-            body { margin: 0; font: 1.1rem/1.6 system-ui; color: #163834; background: #f4f8f5; }
-            header, main, footer { max-width: 70rem; margin: auto; padding: 2rem; }
-            nav, .features { display: flex; gap: 2rem; flex-wrap: wrap; } nav { justify-content: space-between; }
-            a { color: #145b4a; } .hero { padding: 4rem 0; max-width: 48rem; }
-            h1 { font-size: clamp(2.5rem, 6vw, 5rem); line-height: 1.1; }
-            .button { display: inline-block; background: #145b4a; color: white; padding: .8rem 1.3rem; border-radius: 2rem; }
-            .features article { flex: 1 1 15rem; } #start { border-top: 1px solid #c7d8cf; padding-top: 2rem; }
-        }]
+  head [
+    meta.charset: "utf-8" #[]
+    meta.name: "viewport"
+      .content: "width=device-width, initial-scale=1" #[]
+
+    title "Gather — make space for good work"
+
+    style [
+      raw {
+        body { margin: 0; font: 1.1rem/1.6 system-ui; color: #163834; background: #f4f8f5; }
+        header, main, footer { max-width: 70rem; margin: auto; padding: 2rem; }
+        nav, .features { display: flex; gap: 2rem; flex-wrap: wrap; } nav { justify-content: space-between; }
+        a { color: #145b4a; } .hero { padding: 4rem 0; max-width: 48rem; }
+        h1 { font-size: clamp(2.5rem, 6vw, 5rem); line-height: 1.1; }
+        .button { display: inline-block; background: #145b4a; color: white; padding: .8rem 1.3rem; border-radius: 2rem; }
+        .features article { flex: 1 1 15rem; } #start { border-top: 1px solid #c7d8cf; padding-top: 2rem; }
+      }
     ]
-    body [
-        header [nav.aria_label: "Main navigation" [strong "Gather" a.href: "#features" "Features" a.href: "#start" "Get started"]]
-        main [
-            section.class: "hero" [
-                p "A CALMER WAY TO COLLABORATE"
-                h1 "Good work starts with a little space."
-                p "Keep your notes, plans, and people together. Spend less time looking and more time making."
-                a.class: "button".href: "#start" "Find your focus"
-            ]
-            section.id: "features" [
-                h2 "Everything you need to move forward"
-                div.class: "features" [
-                    feature "One home for your ideas" "Bring scattered notes into a shared workspace."
-                    feature "Plans that stay clear" "Give every project a next step and an owner."
-                    feature "Room for everyone" "Share progress without another status meeting."
-                ]
-            ]
-            section.id: "start" [h2 "Start something good" p "Tell us about your team." a.class: "button".href: "mailto:hello@example.com" "Talk to us"]
+  ]
+
+  body [
+    header [
+      nav.aria_label: "Main navigation" [
+        strong "Gather"
+        a.href: "#features" "Features"
+        a.href: "#start" "Get started"
+      ]
+    ]
+
+    main [
+      section.class: "hero" [
+        p "A CALMER WAY TO COLLABORATE"
+        h1 "Good work starts with a little space."
+
+        p
+          "Keep your notes, plans, and people together. Spend less time looking and more time making."
+
+        a.class: "button".href: "#start" "Find your focus"
+      ]
+
+      section.id: "features" [
+        h2 "Everything you need to move forward"
+
+        div.class: "features" [
+          feature "One home for your ideas"
+            "Bring scattered notes into a shared workspace."
+
+          feature "Plans that stay clear"
+            "Give every project a next step and an owner."
+
+          feature "Room for everyone"
+            "Share progress without another status meeting."
         ]
-        footer [small "Gather · Thoughtfully simple."]
+      ]
+
+      section.id: "start" [
+        h2 "Start something good"
+        p "Tell us about your team."
+
+        a.class: "button"
+          .href: "mailto:hello@example.com" "Talk to us"
+      ]
     ]
+
+    footer [
+      small "Gather · Thoughtfully simple."
+    ]
+  ]
 ]
