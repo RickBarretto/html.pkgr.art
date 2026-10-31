@@ -7,6 +7,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: Install runtime dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libgtk-3-0t64 libwebkit2gtk-4.1-0 libmpfr6
       - uses: arturo-lang/setup-arturo@v2
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
