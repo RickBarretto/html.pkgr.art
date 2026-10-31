@@ -1,3 +1,23 @@
+; Markup is serialized eagerly: blocks run once and generated markup stays distinct from text.
+define :htmlMarkup [
+    init: method [value :string][this\value: new value]
+    string: method [][this\value]
+]
+define :htmlRaw is :htmlMarkup []
+define :htmlDocument is :htmlMarkup []
+escapeHtml: function [value :string][
+    value: replace value "&" "&amp;"
+    value: replace value "<" "&lt;"
+    value: replace value ">" "&gt;"
+    replace value {"} "&quot;"
+]
+serializeHtml: function [value][
+    if null? value [return ""]
+    if is? :htmlMarkup value [return to :string value]
+    ensure.that: "HTML children must be strings or markup" -> string? value
+    escapeHtml value
+]
+
 define :html [
 
     init: method [][
@@ -12,10 +32,10 @@ define :html [
             del ins
 
             ; Embedded Content
-            embed iframe object picture portal source svg math
+            embed iframe object picture source
 
             ; Forms
-            button datails fieldset form input label legend meter optgroup
+            button datalist fieldset form input label legend meter optgroup
             option output progress select textarea
 
             ; Inline Text 
@@ -60,86 +80,58 @@ define :html [
         replace content "_" "-"
     ]
 
-    voidElement: method [tag :string :literal :word htmlAttributes :dictionary][
-        ;; Void \elements are \elements without closing-tags.
-        ;;
-        ;; Format
-        ;; ------
-        ;; They follows the pattern: ``<tag key="value" .../>``
-        ;; 
-        ;; Features
-        ;; --------
-        ;; Use Arturo's attributes to dynamically add html's attributes to it.
-        ;;
-        ;; Extra
-        ;; -----
-        ;; Read more about void \elements here: 
-        ;; <https://html.spec.whatwg.org/multipage/syntax.html#void-\elements/>
-        
-        attributes: (
-            map htmlAttributes [key value] -> render {|\kebab key|="|value|"} 
-                | append (map attrs [key value] -> render {|\kebab key|="|value|"})
-                | join.with: " " 
-        )
+    raw: method [value :string][to :htmlRaw @[value]]
 
-        if attributes <> "" -> prepend 'attributes " "
-        ~"<|tag||attributes|/>" 
-    ]
-
-    element: method.public [tag :string :literal content :block :string :dictionary][
-        ;; \elements refers to the normal \elements defined by the HTML5 standard.
-        ;;
-        ;; Format
-        ;; ------
-        ;; * They follows the pattern: ``<tag key="value" .../>content<tag />``.
-        ;; * When ``content`` is a :block, the content will be intended by 2 spaces.
-        ;; 
-        ;; Features
-        ;; --------
-        ;; Use Arturo's attributes to dynamically add html's attributes to it.
-        ;;
-        ;; Extra
-        ;; -----
-        ;; Read more about \elements here: 
-        ;; <https://html.spec.whatwg.org/multipage/syntax.html#\elements-2/>
-
-        if dictionary? content ->
-            return \voidElement tag content
-
-        attributes: (join.with: " " map attrs [key value] -> render {|\kebab key|="|value|"})
-        if attributes <> "" -> prepend 'attributes " "
-
-        if block? content ->
-            join.with: "\n" @[
-                ~"<|tag||attributes|>" 
-                indent.n: 2 join.with: "\n" @content
-                ~"</|tag|>"
-            ] 
-
-        if string? content ->
-            ~"<|tag||attributes|>|content|</|tag|>"
+    element: method.public [tag :string :literal content][
+        tag: lower to :string tag
+        ensure.that: "Invalid HTML tag name" -> match? tag {^[a-z][a-z0-9-]*$}
+        normalized: #[]
+        if dictionary? content [
+            loop content [key value][normalized\[\kebab lower to :string key]: value]
+        ]
+        loop attrs [key value][normalized\[\kebab lower to :string key]: value]
+        attributes: ""
+        loop sort keys normalized 'key [
+            ensure.that: "Invalid HTML attribute name" -> match? key {^[a-z_:][a-z0-9_.:-]*$}
+            value: normalized\[key]
+            unless null? value [
+                ensure.that: "Unsupported attribute value" -> in? type value [:string :literal :integer :floating :logical]
+                boolean: in? key ["disabled" "checked" "selected" "multiple" "required" "readonly" "autofocus" "hidden" "open" "controls" "autoplay" "loop" "muted" "novalidate" "formnovalidate" "reversed" "ismap" "defer" "async" "allowfullscreen" "inert" "itemscope" "nomodule" "playsinline" "default" "disablepictureinpicture" "disableremoteplayback" "shadowrootclonable" "shadowrootdelegatesfocus" "shadowrootserializable"]
+                switch and? boolean logical? value [
+                    if value [attributes: attributes ++ " " ++ key]
+                ][
+                    attributes: attributes ++ " " ++ key ++ {="} ++ (escapeHtml to :string value) ++ {"}
+                ]
+            ]
+        ]
+        children: []
+        unless dictionary? content [
+            children: (block? content)? [@content] [@[content]]
+        ]
+        children: select children 'child [not? null? child]
+        void: in? tag ["area" "base" "br" "col" "embed" "hr" "img" "input" "link" "meta" "source" "track" "wbr"]
+        if void [
+            ensure.that: "Void elements cannot have children" -> or? empty? children children = [""]
+            return to :htmlMarkup @[~"<|tag||attributes|>"]
+        ]
+        if in? tag ["script" "style"] [
+            loop children 'child [ensure.that: "Use html raw for trusted script/style content" -> or? child = "" is? :htmlRaw child]
+        ]
+        rendered: join map children 'child [serializeHtml child]
+        to :htmlMarkup @[~"<|tag||attributes|>|rendered|</|tag|>"]
     ]
 
     html: method [page :block][
         html4: attr 'html4
-
-        doctype: (html4)?
-            -> {!html
-                <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
-            }
-            -> {!html
-                <!DOCTYPE html>
-            }
-
-        join.with: "\n" @[
-            doctype
-            \element 'html page
-        ]  
+        ensure.that: "HTML4 mode is no longer supported" -> null? html4
+        document: "<!DOCTYPE html>" ++ to :string \element 'html page
+        to :htmlDocument @[document]
     ]
 
 ]
 
 html: to :html []
 fragment: $[content][
-    join.with: "\n" @ html\_process content
+    values: (block? content)? [html\_process content] [@[content]]
+    join map values 'value [serializeHtml value]
 ]!

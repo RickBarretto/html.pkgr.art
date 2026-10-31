@@ -1,2 +1,2 @@
 entry: {src/html}
-requires: [> 0.9.83]
+requires: [>= 0.10.0]

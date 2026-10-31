@@ -1,35 +1,13 @@
-import {unitt}!
-
+import.version: 3.1.1 {unitt}!
 import {src/html}!
-
-test "E2E testing fragment against html" [
-    expect: {!html
-      <!DOCTYPE html>
-      <html>
-        <head>
-          <title>Hello</title>
-          <meta name="twitter:card"/>
-        </head>
-        <body>
-          <h1>Title</h1>
-          <input name="user" type="username"/>
-        </body>
-      </html>
-    }
-
-    result: fragment [
-        \html [ 
-        \head [
-            \title "Hello"
-            \meta #[name: "twitter:card"]
-        ]
-
-        \body [
-            \h1 "Title"
-            \input #[name: "user" type: "username"]
-        ]
-    ]]
-
-    assert -> expect = result
+it "renders a document" [
+    expects -> (fragment [\html [\body [\p "Hello"]]]) = "<!DOCTYPE html><html><body><p>Hello</p></body></html>"
 ]
-
+it "renders root attributes and captures the document once" [
+    document: fragment [\html.lang: "en" [\head [\title "<&>"] \body []]]
+    expects -> document = {<!DOCTYPE html><html lang="en"><head><title>&lt;&amp;&gt;</title></head><body></body></html>}
+    reusable: html\element "span" "Hello"
+    expects -> (fragment reusable) = "<span>Hello</span>"
+    expects -> (to :string reusable) = "<span>Hello</span>"
+]
+unless key? args 'filename -> unitt\report 'full

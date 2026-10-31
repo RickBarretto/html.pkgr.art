@@ -1,147 +1,17 @@
-import {unitt}!
+import.version: 3.1.1 {unitt}!
 import {src/html}!
-
-test "generic elements follows the standard for :string" [
-    result: html\element "el" "Hello, World!"
-    assert -> "<el>Hello, World!</el>" = result
+it "escapes text and attributes" [
+    expects -> (fragment [\p.title: {a"&} "<&>"]) = {<p title="a&quot;&amp;">&lt;&amp;&gt;</p>}
 ]
-
-
-test "generic elements follows the standard for nested :block s" [
-    ;; This test tests multiple things:
-    ;; * Opening and closing tags:
-    ;;      Each element should be opened and closed
-    ;; * Indentation
-    ;;      Two spaces must be added per element nesting
-    ;; * Evaluation
-    ;;      the user shouldn't use '@ to evaluate, the element must do it
-
-    breakLine: "<br>"
-    bold: $[x][html\element "b" x]
-    paragraph: $[x][html\element "p" x]
-
-    expect: {!html
-        <p>
-          Hello,
-          <br>
-          <b>World</b>
-          !
-        </p>
-    }
-
-    result: paragraph [
-        "Hello,"
-        breakLine
-        bold "World" "!"
-    ]
-
-    assert -> expect = result
+it "composes markup without escaping twice" [
+    expects -> (fragment [\div [\p "hello" \br #[]]]) = "<div><p>hello</p><br></div>"
 ]
-
-test "indentation follows the nesting of elements" [
-    ;; Also verifies the nesting for strings
-    ;;
-    ;; How the formatation must work:
-    ;;
-    ;; tag "Content" 
-    ;; ; <tag>Content</tag>
-    ;;
-    ;; tag ["Content"] 
-    ;; ; <tag>
-    ;; ;   Content
-    ;; ; </tag>
-
-    divisory: $[x][html\element "div" x]
-
-    expect: {!html
-        <div>
-          Level 01
-          <div>
-            Level 02
-            <div>Level 03</div>
-            Level 02
-          </div>
-          Level 01
-        </div>
-    }
-
-    result: divisory [
-        "Level 01"
-        divisory [
-            "Level 02"
-            divisory "Level 03"
-            "Level 02"
-        ]
-        "Level 01"
-    ]
-
-    assert -> expect = result
+it "serializes booleans and merges attributes" [
+    expects -> (fragment [\input.disabled: false.id: "b" #[id: "a"]]) = {<input id="b">}
+    expects -> (fragment [\input.disabled: true #[]]) = "<input disabled>"
+    expects -> (fragment [\p.aria_hidden: false ""]) = {<p aria-hidden="false"></p>}
 ]
-
-test "dynamic attributes follows standard" [
-    ;; We can dynamically add Elements's attributes by using Arturo's attributes
-    ;;
-    ;; How this must work:
-    ;;
-    ;; tag.class: "content" "Content" 
-    ;; ; <tag class="content">Content</tag>
-    ;;
-    ;; tag.author: "RickB" ["Content"] 
-    ;; ; <tag author="RickB">
-    ;; ;   Content
-    ;; ; </tag>
-
-    divisory: $[x][html\element "div" x]
-    entry: $[x][html\element .name: x "input" ""]
-    button: $[x][html\element "button" x]
-
-    expect: {!html
-        <div class="login-box">
-          <input type="email" name="user"></input>
-          <input type="password" name="pwd"></input>
-          <button class="enter">Log In</button>
-          <button class="recover">Forgot my password</button>
-        </div>
-    }
-
-    result: divisory.class: "login-box" [
-        entry.type: 'email "user" 
-        entry.type: 'password "pwd"
-        button.class: 'enter "Log In"
-        button.class: 'recover "Forgot my password"
-    ]
-
-    assert -> expect = result
+it "supports explicit raw content" [
+    expects -> (fragment [\script [\raw "a < b;"]]) = "<script>a < b;</script>"
 ]
-
-
-test "snake-case should be converted to kebab" [
-    divisory: $[x][html\element 'div x]
-    expect: {!html
-        <div aria-valuenow="50"></div>
-    }
-
-    result: divisory.aria_valuenow: 50 ""
-    assert -> expect = result
-
-]
-
-
-test "auto void elements when pass a :dictionary as parameter" [
-    input: $[x][html\element 'input x]
-    expect: {!html
-        <input type="email"></input>
-    }
-
-    result: input.type: "email" ""
-    assert -> expect = result
-    
-
-    expect: {!html
-        <input type="email"/>
-    }
-
-    result: input #[type: "email"]
-    assert -> expect = result
-
-]
+unless key? args 'filename -> unitt\report 'full

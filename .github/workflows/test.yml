@@ -1,0 +1,17 @@
+name: Test
+on: [push, pull_request]
+permissions:
+  contents: read
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: arturo-lang/setup-arturo@v2
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          do: compile
+          src: v0.10.0
+      - run: arturo -p install unitt 3.1.1
+      - run: arturo --no-color test.art
+      - run: arturo --no-color exp.art

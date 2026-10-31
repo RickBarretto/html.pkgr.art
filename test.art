@@ -1,9 +1,15 @@
-#! arturo
-
-import.version: 1.1.2 'unitt!
-
-testPath: "test"
-
-runTests (empty? arg)? 
-     -> findTests.thatMatches: "*.test.art" testPath
-     -> map arg 'file [ ~"|testPath|/|file|.test.art" ]
+; Delegate discovery, process isolation, reporting, and failure status to Unitt.
+options: []
+unless empty? arg [
+    ensure.that: "Pass a single suite name, e.g. element" -> 1 = size arg
+    suiteName: first arg
+    ensure.that: "Invalid suite name" -> match? suiteName {^[a-zA-Z0-9_-]+$}
+    options: @["--suffix:" ++ suiteName ++ ".test.art"]
+]
+result: execute.code.args: options "unitt"
+print result\output
+; Unitt 3.1.1 uses `exit 1` for uncaught errors, but `exit` takes no
+; operand on Arturo 0.10.0. Preserve failure status for that upstream path.
+if or? (not? zero? result\code) (contains? result\output "Uncaught error in ") [
+    panic "Unitt failed"
+]
