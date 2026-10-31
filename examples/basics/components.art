@@ -1,14 +1,16 @@
 import {src/html}!
 
-; Return typed markup so the parent preserves the component's HTML.
+; Fragments return typed markup so components compose without escaping HTML.
 card: function [name][
-  markup\article.class: "card" [
-    h2 name
+  fragment [
+    article.class: "card" [
+      h2 name
 
-    p [
-      "Hello, "
-      strong name
-      "!"
+      p [
+        "Hello, "
+        strong name
+        "!"
+      ]
     ]
   ]
 ]

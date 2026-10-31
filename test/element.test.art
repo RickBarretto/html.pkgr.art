@@ -1,17 +1,17 @@
 import.version: 3.1.1 {unitt}!
 import {src/html}!
 it "escapes text and attributes" [
-    expects -> (fragment [\p.title: {a"&} "<&>"]) = {<p title="a&quot;&amp;">&lt;&amp;&gt;</p>}
+    expects -> (to :string fragment [\p.title: {a"&} "<&>"]) = {<p title="a&quot;&amp;">&lt;&amp;&gt;</p>}
 ]
 it "composes markup without escaping twice" [
-    expects -> (fragment [\div [\p "hello" \br #[]]]) = "<div><p>hello</p><br></div>"
+    expects -> (to :string fragment [\div [\p "hello" \br #[]]]) = "<div><p>hello</p><br></div>"
 ]
 it "serializes booleans and merges attributes" [
-    expects -> (fragment [\input.disabled: false.id: "b" #[id: "a"]]) = {<input id="b">}
-    expects -> (fragment [\input.disabled: true #[]]) = "<input disabled>"
-    expects -> (fragment [\p.aria_hidden: false ""]) = {<p aria-hidden="false"></p>}
+    expects -> (to :string fragment [\input.disabled: false.id: "b" #[id: "a"]]) = {<input id="b">}
+    expects -> (to :string fragment [\input.disabled: true #[]]) = "<input disabled>"
+    expects -> (to :string fragment [\p.aria_hidden: false ""]) = {<p aria-hidden="false"></p>}
 ]
 it "supports explicit raw content" [
-    expects -> (fragment [\script [\raw "a < b;"]]) = "<script>a < b;</script>"
+    expects -> (to :string fragment [\script [\raw "a < b;"]]) = "<script>a < b;</script>"
 ]
 unless key? args 'filename -> unitt\report 'full

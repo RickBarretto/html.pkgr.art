@@ -1,13 +1,15 @@
 import {src/html}!
 
 post: function [heading published summary][
-  markup\article [
-    header [
-      h2 heading
-      time.datetime: published published
-    ]
+  fragment [
+    article [
+      header [
+        h2 heading
+        time.datetime: published published
+      ]
 
-    p summary
+      p summary
+    ]
   ]
 ]
 

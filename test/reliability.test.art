@@ -4,11 +4,11 @@ other: to :htmlDsl []!
 
 describe "serialization boundaries" [
     it "handles empty content and preserves whitespace and Unicode" [
-        expects -> (fragment []) = ""
-        expects -> (fragment [\div []]) = "<div></div>"
-        expects -> (fragment [\pre "  Olá\n world  "]) = "<pre>  Olá\n world  </pre>"
-        expects -> (fragment [\p ["Hello " \strong "world" "!"]]) = "<p>Hello <strong>world</strong>!</p>"
-        expects -> (fragment [\textarea "<&>"]) = "<textarea>&lt;&amp;&gt;</textarea>"
+        expects -> (to :string fragment []) = ""
+        expects -> (to :string fragment [\div []]) = "<div></div>"
+        expects -> (to :string fragment [\pre "  Olá\n world  "]) = "<pre>  Olá\n world  </pre>"
+        expects -> (to :string fragment [\p ["Hello " \strong "world" "!"]]) = "<p>Hello <strong>world</strong>!</p>"
+        expects -> (to :string fragment [\textarea "<&>"]) = "<textarea>&lt;&amp;&gt;</textarea>"
     ]
     it "rejects invalid names, children, and attribute values" [
         ; Isolate runtime exceptions: caught method errors affect subsequent
@@ -39,11 +39,11 @@ describe "serialization boundaries" [
     ]
     it "keeps trusted raw values distinct from text and normal markup" [
         rawValue: markup\raw "<b>trusted</b>"
-        expects -> (fragment rawValue) = "<b>trusted</b>"
-        expects -> (fragment "<b>text</b>") = "&lt;b&gt;text&lt;/b&gt;"
-        expects -> (fragment [\script ""]) = "<script></script>"
-        expects -> (fragment [\style [\raw "p > b {color: red}"]]) = "<style>p > b {color: red}</style>"
-        expects -> (fragment [\br []]) = "<br>"
+        expects -> (to :string fragment rawValue) = "<b>trusted</b>"
+        expects -> (to :string fragment "<b>text</b>") = "&lt;b&gt;text&lt;/b&gt;"
+        expects -> (to :string fragment [\script ""]) = "<script></script>"
+        expects -> (to :string fragment [\style [\raw "p > b {color: red}"]]) = "<style>p > b {color: red}</style>"
+        expects -> (to :string fragment [\br []]) = "<br>"
     ]
 ]
 
@@ -52,19 +52,19 @@ describe "composition and isolation" [
         source: "first"
         node: markup\element "p" source
         source: "second"
-        expects -> (fragment node) = "<p>first</p>"
-        expects -> (fragment node) = "<p>first</p>"
+        expects -> (to :string fragment node) = "<p>first</p>"
+        expects -> (to :string fragment node) = "<p>first</p>"
         calls: []
         node: markup\element "div" [append 'calls "called" "text"]
-        expects -> (fragment node) = "<div>text</div>"
-        expects -> (fragment node) = "<div>text</div>"
+        expects -> (to :string fragment node) = "<div>text</div>"
+        expects -> (to :string fragment node) = "<div>text</div>"
         expects -> calls = ["called"]
     ]
     it "does not leak attributes between elements or instances" [
         firstNode: markup\element.id: "first" "p" ""
         secondNode: markup\element "p" ""
-        expects -> (fragment firstNode) = {<p id="first"></p>}
-        expects -> (fragment secondNode) = "<p></p>"
+        expects -> (to :string fragment firstNode) = {<p id="first"></p>}
+        expects -> (to :string fragment secondNode) = "<p></p>"
         independent: to :string other\element "p" ""
         expects.be: 'equal? @[independent "<p></p>"]
     ]
@@ -73,15 +73,15 @@ describe "composition and isolation" [
             loop ["one" "two"] 'item [\element "my-item" item]
             if true [\p "yes"]
         ]
-        expects -> result = "<my-item>one</my-item><my-item>two</my-item><p>yes</p>"
+        expects -> (to :string result) = "<my-item>one</my-item><my-item>two</my-item><p>yes</p>"
     ]
     it "normalizes duplicate keys before dynamic overrides" [
-        expects -> (fragment [\p.data_id: "new" #["data-id": "old"]]) = {<p data-id="new"></p>}
-        expects -> (fragment [\input #[title: null value: "" tabindex: 0]]) = {<input tabindex="0" value="">}
-        expects -> (fragment [\p.data_id: "new" #["DATA-ID": "old"]]) = {<p data-id="new"></p>}
-        expects -> (fragment [\p.title: null #[title: "old"]]) = "<p></p>"
-        expects -> (fragment [\input #[disabled: true required: false]]) = "<input disabled>"
-        expects -> (fragment [\p #[data_id: 'example tabindex: 2 title: 1.5]]) = {<p data-id="example" tabindex="2" title="1.5"></p>}
+        expects -> (to :string fragment [\p.data_id: "new" #["data-id": "old"]]) = {<p data-id="new"></p>}
+        expects -> (to :string fragment [\input #[title: null value: "" tabindex: 0]]) = {<input tabindex="0" value="">}
+        expects -> (to :string fragment [\p.data_id: "new" #["DATA-ID": "old"]]) = {<p data-id="new"></p>}
+        expects -> (to :string fragment [\p.title: null #[title: "old"]]) = "<p></p>"
+        expects -> (to :string fragment [\input #[disabled: true required: false]]) = "<input disabled>"
+        expects -> (to :string fragment [\p #[data_id: 'example tabindex: 2 title: 1.5]]) = {<p data-id="example" tabindex="2" title="1.5"></p>}
     ]
 ]
 
