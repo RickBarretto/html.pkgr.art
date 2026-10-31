@@ -15,6 +15,8 @@ jobs:
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           from: stable
+      - name: Add Arturo package binaries to PATH
+        run: echo "$HOME/.arturo/bin" >> "$GITHUB_PATH"
       - run: arturo -p install unitt 3.1.1
       - run: arturo --no-color test.art
       - run: arturo --no-color exp.art
