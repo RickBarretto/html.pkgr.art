@@ -1,0 +1,88 @@
+import.version: 3.1.1 {unitt}!
+import {src/html}!
+other: to :html []!
+
+describe "serialization boundaries" [
+    it "handles empty content and preserves whitespace and Unicode" [
+        expects -> (fragment []) = ""
+        expects -> (fragment [\div []]) = "<div></div>"
+        expects -> (fragment [\pre "  Olá\n world  "]) = "<pre>  Olá\n world  </pre>"
+        expects -> (fragment [\p ["Hello " \strong "world" "!"]]) = "<p>Hello <strong>world</strong>!</p>"
+        expects -> (fragment [\textarea "<&>"]) = "<textarea>&lt;&amp;&gt;</textarea>"
+    ]
+    it "rejects invalid names, children, and attribute values" [
+        ; Isolate runtime exceptions: caught method errors affect subsequent
+        ; method calls on the supported Arturo build.
+        loop [
+            {html\element {div onclick="x"} ""}
+            {html\element "p" #["bad name": "x"]}
+            {html\element "p" #[class: ["a" "b"]]}
+            {html\element "p" 42}
+            {html\element "br" "child"}
+            {html\element "script" "alert(1)"}
+            {html\element "style" "p {}"}
+            {html\element "script" [html\element "p" "nested"]}
+            {fragment [\html.html4 []]}
+        ] 'code [
+            command: "import {src/html}! " ++ code
+            result: execute.code.args: @["--no-color" "-e" command] "arturo"
+            expects -> not? zero? result\code
+        ]
+    ]
+    
+    it "serializes every void element without a closing tag" [
+        loop [area base br col embed hr img input link meta source track wbr] 'tag [
+            result: to :string html\element to :literal tag #[]
+            expected: "<" ++ (to :string tag) ++ ">"
+            expects.be: 'equal? @[result expected]
+        ]
+    ]
+    it "keeps trusted raw values distinct from text and normal markup" [
+        rawValue: html\raw "<b>trusted</b>"
+        expects -> (fragment rawValue) = "<b>trusted</b>"
+        expects -> (fragment "<b>text</b>") = "&lt;b&gt;text&lt;/b&gt;"
+        expects -> (fragment [\script ""]) = "<script></script>"
+        expects -> (fragment [\style [\raw "p > b {color: red}"]]) = "<style>p > b {color: red}</style>"
+        expects -> (fragment [\br []]) = "<br>"
+    ]
+]
+
+describe "composition and isolation" [
+    it "renders repeatedly without repeating effects or retaining mutable inputs" [
+        source: "first"
+        node: html\element "p" source
+        source: "second"
+        expects -> (fragment node) = "<p>first</p>"
+        expects -> (fragment node) = "<p>first</p>"
+        calls: []
+        node: html\element "div" [append 'calls "called" "text"]
+        expects -> (fragment node) = "<div>text</div>"
+        expects -> (fragment node) = "<div>text</div>"
+        expects -> calls = ["called"]
+    ]
+    it "does not leak attributes between elements or instances" [
+        firstNode: html\element.id: "first" "p" ""
+        secondNode: html\element "p" ""
+        expects -> (fragment firstNode) = {<p id="first"></p>}
+        expects -> (fragment secondNode) = "<p></p>"
+        independent: to :string other\element "p" ""
+        expects.be: 'equal? @[independent "<p></p>"]
+    ]
+    it "supports custom elements, loops, and conditionals" [
+        result: fragment [
+            loop ["one" "two"] 'item [\element "my-item" item]
+            if true [\p "yes"]
+        ]
+        expects -> result = "<my-item>one</my-item><my-item>two</my-item><p>yes</p>"
+    ]
+    it "normalizes duplicate keys before dynamic overrides" [
+        expects -> (fragment [\p.data_id: "new" #["data-id": "old"]]) = {<p data-id="new"></p>}
+        expects -> (fragment [\input #[title: null value: "" tabindex: 0]]) = {<input tabindex="0" value="">}
+        expects -> (fragment [\p.data_id: "new" #["DATA-ID": "old"]]) = {<p data-id="new"></p>}
+        expects -> (fragment [\p.title: null #[title: "old"]]) = "<p></p>"
+        expects -> (fragment [\input #[disabled: true required: false]]) = "<input disabled>"
+        expects -> (fragment [\p #[data_id: 'example tabindex: 2 title: 1.5]]) = {<p data-id="example" tabindex="2" title="1.5"></p>}
+    ]
+]
+
+unless key? args 'filename -> unitt\report 'full
