@@ -1,65 +1,198 @@
 # HTML DSL API
 
-Import with `import {src/html}!`. Supported names follow the official names discussed in [issue #2](https://github.com/RickBarretto/html.pkgr.art/issues/2). The inventory below is grouped by [MDN HTML element categories](https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements); these are reference groups, not enforced content models.
+Write tags inside `html`, `body`, or `fragment` blocks. Use `markup\tag` outside them.
+Examples on this page assume this import from the repository root:
 
-## Entry points and qualified helpers
+```art
+import {src/html}!
+```
 
-`fragment content` returns typed markup without a wrapper element. Text is escaped and nested markup is preserved. Print it directly or use `to :string fragment content` for a compact string. `html content` returns typed document markup with `<!DOCTYPE html>`. `body content` returns typed body markup. Both callable entry functions forward generic attributes. Every element accepts exactly one content argument: a string, typed markup, an eagerly evaluated child block, or an attribute dictionary for an empty element. Void elements still require that argument: use `[]`, `""`, or `#[]`.
+For a published release, use `import {html}!`. See the [README](README.md#installation)
+if you're trying this branch for the first time.
 
-`markup` is the public DSL object. `markup\p "Hello"`, `markup\element "my-widget" [span "Hello"]`, and `markup\raw "<b>Trusted</b>"` work outside DSL scopes. `markup\html []` includes the doctype; `markup\element "html" []` serializes only the element. `to :string node` renders typed markup. `fragment node` wraps it as composable markup. Markup captures its content once; rendering it again does not rerun child blocks.
+[Entry points](#entry-points) · [Children](#children) · [Attributes](#attributes) · [Components](#components-and-control-flow) · [Raw HTML](#raw-html-scripts-and-styles) · [Scope](#name-collisions) · [Tags](#tag-reference) · [Migration](#migration)
 
-All fragment blocks and element child blocks bind official tag helpers plus `element` and `raw` locally. Official names take precedence over caller bindings and built-ins such as `div`, `map`, `select`, and `input`. Caller bindings and built-ins are restored when the scope returns. Save any needed built-in behavior under another name before entering the DSL. Assignments in DSL blocks follow function scope; use a shared collection for intentional observable effects.
+## Entry Points
+
+| Call | Result |
+| --- | --- |
+| `html content` | HTML document, starting with `<!DOCTYPE html>` |
+| `body content` | A `<body>` element |
+| `fragment content` | Markup with no wrapper |
+| `markup\p content` | A tag outside a child block |
+| `markup\element "my-widget" content` | A custom tag |
+| `markup\raw "<b>Trusted</b>"` | Markup with escaping turned off |
+| `to :string node` | A compact HTML string |
+
+`html` and `body` forward attributes to their elements.
+`markup\html []` includes the doctype; `markup\element "html" []` doesn't.
+
+```art
+print html.lang: "en" [
+  head [title "Hello"]
+  body [p "Welcome!"]
+]
+; <!DOCTYPE html><html lang="en"><head><title>Hello</title></head><body><p>Welcome!</p></body></html>
+```
+
+## Children
+
+Every tag takes **one** content argument:
+
+| Content | What happens |
+| --- | --- |
+| `p "Hello"` | Escapes the text |
+| `div [h2 "Hello" p "Welcome"]` | Evaluates the block and nests its markup |
+| `div fragment [p "Hello"]` | Nests existing markup without escaping it again |
+| `div #[class: "empty"]` | Uses the dictionary as attributes; no children |
+| `br []` | Emits an empty void tag: `<br>` |
+
+Text escapes `&`, `<`, `>`, and double quotes. Only strings and markup can be
+children; `null` is ignored. Convert numbers with `to :string`.
+
+Blocks run **once**, when you create the markup. Rendering it again doesn't rerun them.
+`->` is handy when there's only one child expression:
+
+```art
+print fragment [article -> div.class: "content" ["Hello"]]
+; <article><div class="content">Hello</div></article>
+```
+
+Void tags such as `input`, `img`, and `br` still need an argument. Pass `[]`,
+`""`, or an attribute dictionary. Nonempty content raises an error.
+
+## Attributes
+
+Pass attributes with `.name: value`, or use a dictionary for an empty element:
 
 ```art
 print fragment [
-    body [
-        h1.class: "xl" "Hello, World"
-        article -> div.class: "flex-col" ["Children"]
-    ]
+  a.href: "https://arturo-lang.io" .class: "link" "Arturo"
+  input #[name: "email" required: true]
+  p.data_state: "ready" .aria_hidden: false "Hello"
 ]
+; <a class="link" href="https://arturo-lang.io">Arturo</a><input name="email" required><p aria-hidden="false" data-state="ready">Hello</p>
 ```
 
-`->` wraps one expression as a child block. Explicit blocks support multiple children, nested elements, loops, and conditionals. Null results are ignored; other children must be strings or typed markup.
+| Rule | Example |
+| --- | --- |
+| Names become lowercase; `_` becomes `-` | `data_state` → `data-state` |
+| Call attributes override dictionary attributes after normalization | `input.name: "new" #[name: "old"]` |
+| `null` omits an attribute | `p.id: null "Hello"` |
+| HTML boolean attributes use bare names for `true`, disappear for `false` | `input.required: true []` → `<input required>` |
+| Other logical values stay quoted | `.aria_hidden: false` → `aria-hidden="false"` |
+| Attributes sort by normalized name | `.id: "x" .class: "y"` → `class="y" id="x"` |
+
+Values can be strings, literals, integers, floats, or logical values. Values are
+escaped just like text. There are no tag-specific shortcuts or positional attributes.
+
+## Components and Control Flow
+
+Return markup from a function, then call it inside a child block:
 
 ```art
 card: function [name][fragment [article [h2 name]]]
+
 print fragment [
-    div [
-        "People: "
-        loop ["Ana" "João"] 'person [card person]
-        if true [p "Welcome"]
-        if false [p "Hidden"]
-    ]
+  div [
+    "People: "
+    loop ["Ana" "João"] 'person [card person]
+    if true [p "Welcome"]
+    if false [p "Hidden"]
+  ]
 ]
 ```
 
-## Attributes and trust
+The false conditional returns `null`, so it adds nothing. Nested fragments keep
+their markup; you don't need `raw` for components.
 
-Use generic attributes on any helper: `.class: "xl"`, `.id: "intro"`, `.data_state: "ready"`, or `.aria_hidden: false`. Dictionary content supplies attributes for an empty element: `input #[name: "email" required: true]`. Dynamic attributes override dictionary values after names are lowercased and underscores become hyphens. Attributes are sorted by normalized name. Null values are omitted. HTML boolean attributes with logical true are bare and false are omitted; logical values on other attributes are quoted (`aria-hidden="false"`). Strings, literals, integers, floating values, and logical values are supported. Attributes do not introduce tag-specific shorthand or aliases.
+## Raw HTML, Scripts, and Styles
 
-Text and attribute values escape `&`, `<`, `>`, and double quotes. Nested typed markup is preserved without double escaping. `raw` bypasses escaping and requires trusted input. Script/style children must be empty or raw values:
+`raw` means “trust this string.” It skips escaping:
 
 ```art
 print fragment [
-    style [raw "p { color: navy; }"]
-    script [raw "console.log('Hello');"]
-    element.data_state: "ready" "my-widget" [p "Hello <world>"]
+  raw "<b>Trusted HTML</b>"
+  style [raw "p { color: navy; }"]
+  script [raw "console.log('Hello');"]
+  element.data_state: "ready" "my-widget" [p "Hello <world>"]
 ]
 ```
 
-The library does not sanitize JavaScript, CSS, or URLs. It rejects malformed tag/attribute names, unsupported children/attribute values, nonempty void content, and ordinary script/style strings.
+Use `markup\raw` and `markup\element` outside child blocks.
+Script and style bodies accept only raw markup or empty content. Ordinary strings
+raise an error, even when nested in a block.
 
-## Migration and scope
+**Keep untrusted input out of `raw`.** This library doesn't sanitize URLs,
+JavaScript, or CSS. Escaping text isn't a substitute for checking a link's URL.
 
-Replace the old public object `html` with `markup`: `html\p` becomes `markup\p`, `html\element` becomes `markup\element`, and `html\raw` becomes `markup\raw`. `html` is now a callable document entry function. Prefer unqualified names inside child blocks. Legacy backslash shorthand is no longer the documented interface. Tag and fragment results are typed markup rather than plain strings. Replace string uses of `fragment content` with `to :string fragment content`; nested fragments now preserve their HTML. No aliases or specialized positional attribute arguments are provided.
+## Name Collisions
 
-Independent initialized objects can be created with `other: to :htmlDsl []!`; they expose the same qualified methods and scoped child evaluation. Helpers are generated from the same canonical inventory (`markup\tags`).
+Inside child blocks, official tag names take precedence over caller bindings and
+built-ins. That includes `div`, `map`, `select`, and `input`.
 
-HTML4, obsolete elements (including `param`), SVG/MathML serialization, and HTML content-model validation remain excluded. Custom names serialize through `element`; this does not enable SVG/MathML semantics or validate custom element naming conventions beyond the generic name syntax.
+Need one of those built-ins? Save it under another name before entering the block.
+Caller bindings are restored when the block returns.
 
-## Complete tag reference
+Blocks also bind `element`, `raw`, and `html`. Assignments follow function scope;
+use a shared collection if you need to observe changes outside the block.
 
-Examples below are child expressions inside `fragment [...]`. **Normal** means string, scoped child block, or attribute dictionary (empty content). **Void** means empty string/block or attribute dictionary, with no closing tag. **Trusted** means an empty value, raw value, block of raw values, or attribute dictionary. **Document** accepts the same forms as a normal element and adds the doctype.
+## Separate DSL Objects
+
+```art
+other: to :htmlDsl []!
+print other\p "Hello"
+```
+
+Each initialized object has the same helpers and scoped child evaluation.
+`markup\tags` contains the canonical tag inventory used to generate helpers;
+`html` is provided separately as the document helper.
+
+## Errors and Limits
+
+The DSL rejects malformed tag or attribute names, unsupported values, nonempty
+void elements, and ordinary script/style text.
+
+It serializes HTML5. It doesn't check whether an element belongs inside another
+element. HTML4, obsolete elements such as `param`, and SVG/MathML serialization
+aren't supported. Custom tags use the generic name rules; `element` doesn't add
+SVG/MathML behavior or check custom-element naming conventions.
+
+## Migration
+
+Updating from the old API? Start here:
+
+| Before | Now |
+| --- | --- |
+| `html\p "Hello"` | `markup\p "Hello"` outside blocks; `p "Hello"` inside |
+| `html\element "my-widget" []` | `markup\element "my-widget" []` |
+| `html\raw "<b>Hello</b>"` | `markup\raw "<b>Hello</b>"` |
+| A fragment used as a string | `to :string fragment content` |
+| Intentional HTML passed as text | `markup\raw trustedHtml` |
+
+`html` is now a document function; `markup` is the public DSL object. Tags and
+fragments return markup objects instead of strings. Print them directly or render
+with `to :string`. Nesting preserves markup; text is escaped.
+
+Use official tag names inside child blocks. Legacy backslash shorthand is no
+longer the documented interface. There are no aliases or specialized positional
+attribute arguments. Void tags have no closing tag; dictionaries no longer
+request self-closing tags. HTML4 mode has been removed.
+
+## Tag Reference
+
+All supported tags are listed below, grouped by
+[MDN's HTML element categories](https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements).
+These groups help you find a tag; they don't enforce nesting rules.
+
+Examples are expressions inside `fragment [...]`.
+
+| Content kind | Accepted content |
+| --- | --- |
+| Normal | String, markup, child block, or attribute dictionary for an empty element |
+| Void | Empty string/block or attribute dictionary; no closing tag |
+| Trusted | Empty content, raw markup, block of raw values, or attribute dictionary |
+| Document | Normal content, with a doctype before the element |
 
 ### Main root
 

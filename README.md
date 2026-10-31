@@ -1,106 +1,155 @@
-# HTML DSL for Arturo
+<h1 align="center">html</h1>
 
-HTML5 documents and fragments for Arturo 0.10.0. No runtime dependencies.
+<p align="center">
+    <i>Write HTML in Arturo. Skip the string juggling.</i>
+    <br><br><br>
+    <img
+        src="./docs/icons/arturo-light-mode.png#gh-light-mode-only"
+        alt="Arturo logo"
+        width="20"
+    />
+    <img
+        src="./docs/icons/arturo-dark-mode.png#gh-dark-mode-only"
+        alt="Arturo logo"
+        width="20"
+    />
+    <br>
+    <b>~ CODE IS ART ~</b>
+    <br><br>
+</p>
+
+<p align="center">
+    <a href="https://www.arturo-lang.io"><img src="https://img.shields.io/badge/language-Arturo-6A156B.svg?&style=flat&colorA=000000&colorB=000000" alt="Language: Arturo"/></a>
+    &nbsp;
+    <a href="https://github.com/RickBarretto/html.pkgr.art/blob/main/LICENSE"><img src="https://img.shields.io/github/license/RickBarretto/html.pkgr.art?&style=flat&colorA=000000&colorB=000000" alt="License"/></a>
+    &nbsp;
+    <a href="https://github.com/RickBarretto/html.pkgr.art/actions"><img src="https://img.shields.io/github/actions/workflow/status/RickBarretto/html.pkgr.art/test.yml?branch=main&style=flat&colorA=000000&colorB=000000" alt="CI Status"/></a>
+</p>
+
+## At a Glance
 
 ```art
 import {src/html}!
-print fragment html [
-    head [title "Hello"]
-    body [
-        h1.class: "xl" "Hello, World"
-        article -> div.class: "flex-col" ["Children"]
-    ]
+
+print html [
+  head [title "Hello"]
+  body [
+    h1.class: "title" "Hello, Arturo!"
+    p "HTML without string templates."
+  ]
 ]
 ```
 
-Tag helpers return typed markup values. `fragment` combines a DSL block or a
-markup value into typed markup without a wrapper element. Print it directly, or use `to :string` for a compact string.
-Strings are escaped; nested markup is preserved. Blocks evaluate once.
-Use `markup\element "my-widget" "Hello"` for custom tags.
-Dictionary arguments supply attributes on empty elements. Dynamic attributes
-override dictionary values, underscores become hyphens, and null values are
-omitted. HTML boolean attributes accept logical values; ARIA logical values
-remain quoted strings.
+Tags become functions. Text is escaped for you. The result is compact HTML5,
+ready to print or write to a file. Requires **Arturo 0.10.0+**; no runtime dependencies.
 
-For reusable components, return a fragment from a function:
+[Quick start](#quick-start) · [API reference](API.md) · [Examples](examples/README.md) · [Migration](API.md#migration)
 
-```art
-import {src/html}!
-greeting: function [name][fragment [p name]]
-print fragment [greeting "Arturo"]
+## Installation
+
+```sh
+arturo -p install html
 ```
 
-`markup\raw` explicitly trusts a string as markup. Script and style bodies require
-raw markup. Only use trusted content: this library does not sanitize URLs,
-JavaScript, or CSS. SVG/MathML serialization, HTML4, and content-model validation
-are outside this release's supported scope.
+Then use `import {html}!` in your script. Arturo can also install it on first import.
 
-Run the introductory example with `arturo --no-color exp.art`.
+**Trying this branch?** Clone the repo and use `import {src/html}!` from its root,
+as shown here. Registry installs use published releases and may have an older API.
 
-Runnable [examples](examples/README.md) include a blog, landing page, and
-ChatGPT-style chat interface, plus Tailwind, daisyUI, and Bootstrap examples.
-Smaller DSL demonstrations live in [examples/basics](examples/basics/). Each
-example has a checked-in HTML output in [examples/expected](examples/expected/).
+## Quick Start
 
-To view the examples in your browser, run from the repository root:
+Save the example above as `page.art` in the repository root, then run:
+
+```sh
+arturo page.art > page.html
+```
+
+Open `page.html` in your browser. That's it.
+
+### Just need a fragment?
+
+Use `fragment` to group elements without adding a wrapper:
+
+```art
+print fragment [
+  h2 "Hello <world>"
+  p "This text is escaped."
+]
+; <h2>Hello &lt;world&gt;</h2><p>This text is escaped.</p>
+```
+
+### Build a component
+
+Return a fragment from a function. Nest it like any tag:
+
+```art
+greeting: function [name][fragment [p name]]
+
+print fragment [
+  section [
+    greeting "Ana"
+    greeting "João"
+  ]
+]
+```
+
+### Add attributes
+
+Use `.name: value`. Underscores become hyphens:
+
+```art
+print fragment [
+  a.href: "https://arturo-lang.io" "Visit Arturo"
+  input #[name: "email" required: true]
+  p.data_state: "ready" "All set!"
+]
+```
+
+Need custom tags, loops, or trusted HTML? Head to the [API reference](API.md).
+
+## Try the Examples
+
+Blog, landing page, chat UI, Tailwind, daisyUI, and Bootstrap — [pick an example](examples/README.md).
 
 ```sh
 arturo --no-color preview.art
 ```
 
-The script renders all examples, then starts **Lanx**, Arturo's static-file
-server. Its versioned import automatically installs Lanx 0.2.0 and any missing
-dependencies on first use; no separate installation command is needed.
+Open **http://localhost:18966/**. First run installs Lanx 0.2.0 and its missing
+dependencies. Stop with **Ctrl+C**; rerun after edits. Framework examples need
+internet access for styling; chat replies are local demos.
 
-Open **http://localhost:18966/** and choose an example. Keep the command running
-while browsing, and press **Ctrl+C** to stop the server. After editing an
-example, stop and rerun the command to regenerate the pages.
-
-To generate the gallery without starting Lanx:
+To generate the gallery without starting the server or installing Lanx:
 
 ```sh
 arturo --no-color preview.art build
 ```
 
-Generated HTML is written to `.preview/`, which is ignored by Git. Build-only
-mode does not import or install Lanx. Framework styling requires internet access;
-the chat examples provide local demo replies.
+## A Few Rules
 
-You can also render an individual page or run the example output tests:
+- Every tag takes one content argument. For an empty tag, use `[]` or `#[]`.
+- Tags return markup objects. Print them, or use `to :string` when you need a string.
+- Inside child blocks, tag names such as `div` and `input` take over built-ins.
+  See [name collisions](API.md#name-collisions).
+- `raw` skips escaping. Use it only for trusted content, including script and style bodies.
+  URLs, JavaScript, and CSS are not sanitized.
+- This is an HTML5 serializer. HTML4, SVG/MathML, and content-model validation aren't supported.
 
-```sh
-arturo --no-color examples/pages/blog.art > /tmp/blog.html
-arturo --no-color test.art examples
-```
+## Development
 
-The example suite runs each script in a separate process and checks its exit
-status and exact output, including the trailing newline. It also runs as part
-of the full test suite and existing CI workflow.
-
-Development requires Unitt 3.1.1 on PATH:
+Install [Unitt](https://github.com/RickBarretto/unitt) 3.1.1 and make sure its
+executable is on `PATH` (`$HOME/.arturo/packages/bin` on Unix):
 
 ```sh
 arturo -p install unitt 3.1.1
-arturo --no-color test.art
-arturo --no-color test.art element
+arturo --no-color test.art            # all suites, including example output
+arturo --no-color test.art element    # one suite
+arturo --no-color exp.art             # small demo
 ```
 
-The entry point delegates to Unitt's native runner using `config.art`. It also
-preserves failure status for Unitt 3.1.1's uncaught-error path on Arturo 0.10.0.
-You can run a test file directly with `arturo --no-color test/element.test.art`.
-Null results in DSL blocks are ignored, allowing conditionals with no output.
+The test entry point uses `config.art` and preserves failure status for Unitt's
+uncaught-error path on Arturo 0.10.0.
 
-See [API.md](API.md) for the complete tag reference, scoped name collisions,
-entry points, attributes, control flow, and migration examples.
+## License
 
-## Migration
-
-The public DSL object is now `markup`; `html` and `body` are callable entry
-functions. Replace `html\...` with `markup\...`. Within fragment and element
-child blocks, use official tag names directly. These local helpers take
-precedence over built-ins and restore caller bindings when evaluation returns.
-
-Tag and fragment results are markup objects rather than strings. Print them or
-render with `to :string`. Output is compact and text is escaped. Replace
-intentional HTML strings with `markup\raw`. Void tags emit no closing tag;
-dictionaries no longer request self-closing tags. HTML4 mode is removed.
+[MIT](LICENSE).
