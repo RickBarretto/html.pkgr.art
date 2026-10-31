@@ -6,7 +6,7 @@ it "renders a document" [
 it "renders root attributes and captures the document once" [
     document: fragment [\html.lang: "en" [\head [\title "<&>"] \body []]]
     expects -> document = {<!DOCTYPE html><html lang="en"><head><title>&lt;&amp;&gt;</title></head><body></body></html>}
-    reusable: html\element "span" "Hello"
+    reusable: markup\element "span" "Hello"
     expects -> (fragment reusable) = "<span>Hello</span>"
     expects -> (to :string reusable) = "<span>Hello</span>"
 ]
