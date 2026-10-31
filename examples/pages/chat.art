@@ -2,79 +2,122 @@ import {src/html}!
 
 ; A ChatGPT-style layout with local demo replies. No API key or backend.
 print fragment html.lang: "en" [
-    head [
-        meta.charset: "utf-8" #[]
-        meta.name: "viewport".content: "width=device-width, initial-scale=1" #[]
-        title "Companion — chat demo"
-        style [raw {
-            * { box-sizing: border-box; } body { margin: 0; font: 1rem/1.6 system-ui; color: #202624; background: #fff; }
-            .layout { display: grid; grid-template-columns: 16rem minmax(0, 1fr); min-height: 100dvh; }
-            aside { background: #f4f5f2; padding: 1.5rem; } aside nav { display: grid; gap: 1rem; margin-top: 2rem; }
-            a { color: #24664b; } button, textarea { font: inherit; } button { cursor: pointer; border: 1px solid #bccac0; border-radius: .7rem; padding: .65rem 1rem; background: white; }
-            main { display: flex; flex-direction: column; min-width: 0; } header { border-bottom: 1px solid #e2e8e3; padding: 1rem 2rem; }
-            h1 { font-size: 1.2rem; margin: 0; } .conversation { width: 100%; max-width: 52rem; margin: auto; padding: 2rem; }
-            #messages { max-height: 55dvh; overflow-y: auto; padding: .5rem; } .message { margin: 1rem 0; padding: 1rem 1.25rem; border-radius: 1rem; }
-            .message h2 { font-size: .85rem; margin: 0; } .message p { white-space: pre-wrap; overflow-wrap: anywhere; }
-            .user-message { background: #edf3ef; margin-left: 10%; } .assistant-message { border: 1px solid #e2e8e3; margin-right: 5%; }
-            form { display: grid; gap: .7rem; margin-top: 2rem; } textarea { width: 100%; resize: vertical; padding: 1rem; border: 1px solid #bccac0; border-radius: 1rem; }
-            button[type=submit] { justify-self: end; background: #185d43; color: white; } small { color: #58665d; }
-            @media (max-width: 48rem) { .layout { grid-template-columns: 1fr; } aside nav { display: none; } aside { display: flex; justify-content: space-between; gap: 1rem; align-items: center; } .conversation { padding: 1rem; } }
-        }]
+  head [
+    meta.charset: "utf-8" #[]
+    meta.name: "viewport"
+      .content: "width=device-width, initial-scale=1" #[]
+
+    title "Companion — chat demo"
+
+    style [
+      raw {
+        * { box-sizing: border-box; } body { margin: 0; font: 1rem/1.6 system-ui; color: #202624; background: #fff; }
+        .layout { display: grid; grid-template-columns: 16rem minmax(0, 1fr); min-height: 100dvh; }
+        aside { background: #f4f5f2; padding: 1.5rem; } aside nav { display: grid; gap: 1rem; margin-top: 2rem; }
+        a { color: #24664b; } button, textarea { font: inherit; } button { cursor: pointer; border: 1px solid #bccac0; border-radius: .7rem; padding: .65rem 1rem; background: white; }
+        main { display: flex; flex-direction: column; min-width: 0; } header { border-bottom: 1px solid #e2e8e3; padding: 1rem 2rem; }
+        h1 { font-size: 1.2rem; margin: 0; } .conversation { width: 100%; max-width: 52rem; margin: auto; padding: 2rem; }
+        #messages { max-height: 55dvh; overflow-y: auto; padding: .5rem; } .message { margin: 1rem 0; padding: 1rem 1.25rem; border-radius: 1rem; }
+        .message h2 { font-size: .85rem; margin: 0; } .message p { white-space: pre-wrap; overflow-wrap: anywhere; }
+        .user-message { background: #edf3ef; margin-left: 10%; } .assistant-message { border: 1px solid #e2e8e3; margin-right: 5%; }
+        form { display: grid; gap: .7rem; margin-top: 2rem; } textarea { width: 100%; resize: vertical; padding: 1rem; border: 1px solid #bccac0; border-radius: 1rem; }
+        button[type=submit] { justify-self: end; background: #185d43; color: white; } small { color: #58665d; }
+        @media (max-width: 48rem) { .layout { grid-template-columns: 1fr; } aside nav { display: none; } aside { display: flex; justify-content: space-between; gap: 1rem; align-items: center; } .conversation { padding: 1rem; } }
+      }
     ]
-    body [
-        div.class: "layout" [
-            aside [
-                strong "Companion"
-                button.id: "new-chat".type: "button" "New chat"
-                nav.aria_label: "Conversation navigation" [a.href: "#messages" "Current conversation" a.href: "#composer" "Write a message"]
-            ]
-            main [
-                header [h1 "Your everyday thinking partner" small "Local demo · no AI service connected"]
-                div.class: "conversation" [
-                    section.id: "messages".role: "log".aria_live: "polite".aria_label: "Conversation" [
-                        article.class: "message user-message" [h2 "You" p "How can I get started with Arturo?"]
-                        article.class: "message assistant-message" [h2 "Assistant" p "Start with a small script. Try printing a greeting, then turn it into a reusable function."]
-                    ]
-                    form.id: "composer" [
-                        label.for: "prompt" "Message Companion"
-                        textarea.id: "prompt".name: "prompt".rows: 3.required: true.placeholder: "Ask a question…" ""
-                        button.type: "submit" "Send message"
-                    ]
-                    p [small "Replies are generated by a fixed local demo, not an AI model."]
-                    noscript [p "Enable JavaScript to send messages in this demo."]
-                ]
-            ]
+  ]
+
+  body [
+    div.class: "layout" [
+      aside [
+        strong "Companion"
+        button.id: "new-chat".type: "button" "New chat"
+
+        nav.aria_label: "Conversation navigation" [
+          a.href: "#messages" "Current conversation"
+          a.href: "#composer" "Write a message"
         ]
-        script [raw {
-            const form = document.getElementById('composer');
-            const prompt = document.getElementById('prompt');
-            const messages = document.getElementById('messages');
-            const initialMessages = messages.innerHTML;
-            function addMessage(role, text) {
-                const message = document.createElement('article');
-                message.className = role === 'You' ? 'message user-message' : 'message assistant-message';
-                const heading = document.createElement('h2');
-                heading.textContent = role;
-                const content = document.createElement('p');
-                content.textContent = text;
-                message.append(heading, content);
-                messages.append(message);
-                message.scrollIntoView({ block: 'nearest' });
-            }
-            form.addEventListener('submit', (event) => {
-                event.preventDefault();
-                const text = prompt.value.trim();
-                if (!text) return;
-                addMessage('You', text);
-                addMessage('Assistant', 'Demo reply: you asked “' + text + '”. Break the task into one small step, try it, and review the result.');
-                form.reset();
-                prompt.focus();
-            });
-            document.getElementById('new-chat').addEventListener('click', () => {
-                messages.innerHTML = initialMessages;
-                form.reset();
-                prompt.focus();
-            });
-        }]
+      ]
+
+      main [
+        header [
+          h1 "Your everyday thinking partner"
+          small "Local demo · no AI service connected"
+        ]
+
+        div.class: "conversation" [
+          section.id: "messages"
+            .role: "log"
+            .aria_live: "polite"
+            .aria_label: "Conversation" [
+              article.class: "message user-message" [
+                h2 "You"
+                p "How can I get started with Arturo?"
+              ]
+
+              article.class: "message assistant-message" [
+                h2 "Assistant"
+
+                p
+                  "Start with a small script. Try printing a greeting, then turn it into a reusable function."
+              ]
+            ]
+
+          form.id: "composer" [
+            label.for: "prompt" "Message Companion"
+
+            textarea.id: "prompt"
+              .name: "prompt"
+              .rows: 3
+              .required: true
+              .placeholder: "Ask a question…" ""
+
+            button.type: "submit" "Send message"
+          ]
+
+          p [
+            small "Replies are generated by a fixed local demo, not an AI model."
+          ]
+
+          noscript [
+            p "Enable JavaScript to send messages in this demo."
+          ]
+        ]
+      ]
     ]
+
+    script [
+      raw {
+        const form = document.getElementById('composer');
+        const prompt = document.getElementById('prompt');
+        const messages = document.getElementById('messages');
+        const initialMessages = messages.innerHTML;
+        function addMessage(role, text) {
+            const message = document.createElement('article');
+            message.className = role === 'You' ? 'message user-message' : 'message assistant-message';
+            const heading = document.createElement('h2');
+            heading.textContent = role;
+            const content = document.createElement('p');
+            content.textContent = text;
+            message.append(heading, content);
+            messages.append(message);
+            message.scrollIntoView({ block: 'nearest' });
+        }
+        form.addEventListener('submit', (event) => {
+            event.preventDefault();
+            const text = prompt.value.trim();
+            if (!text) return;
+            addMessage('You', text);
+            addMessage('Assistant', 'Demo reply: you asked “' + text + '”. Break the task into one small step, try it, and review the result.');
+            form.reset();
+            prompt.focus();
+        });
+        document.getElementById('new-chat').addEventListener('click', () => {
+            messages.innerHTML = initialMessages;
+            form.reset();
+            prompt.focus();
+        });
+      }
+    ]
+  ]
 ]

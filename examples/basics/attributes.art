@@ -2,8 +2,23 @@ import {src/html}!
 
 ; Dynamic attributes override normalized dictionary keys.
 print fragment body.id: "settings" [
-    input.disabled: false.data_state: "ready" #[disabled: true "DATA-STATE": "old" type: "text"]
-    input.checked: true.required: false #[type: "checkbox"]
-    p.aria_hidden: false.title: {Say "hello" & welcome} "Olá <world> & friends"
-    element.class: "notice" "my-notice" [span "Custom element"]
+  input.disabled: false
+    .data_state: "ready" #[
+      disabled: true
+      "DATA-STATE": "old"
+      type: "text"
+    ]
+
+  input.checked: true
+    .required: false #[
+      type: "checkbox"
+    ]
+
+  p.aria_hidden: false
+    .title: {Say "hello" & welcome}
+    "Olá <world> & friends"
+
+  element.class: "notice" "my-notice" [
+    span "Custom element"
+  ]
 ]

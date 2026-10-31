@@ -1,46 +1,79 @@
 import {src/html}!
 
 post: function [heading published summary][
-    markup\article.class: "card shadow-sm mb-4" [
-        div.class: "card-body p-4" [
-            h2.class: "card-title h3" heading
-            time.class: "text-body-secondary small".datetime: published published
-            p.class: "card-text mt-3" summary
-        ]
+  markup\article.class: "card shadow-sm mb-4" [
+    div.class: "card-body p-4" [
+      h2.class: "card-title h3" heading
+
+      time.class: "text-body-secondary small"
+        .datetime: published published
+
+      p.class: "card-text mt-3" summary
     ]
+  ]
 ]
 
 print fragment html.lang: "en" [
-    head [
-        meta.charset: "utf-8" #[]
-        meta.name: "viewport".content: "width=device-width, initial-scale=1" #[]
-        title "Fieldnotes — Bootstrap blog"
-        link.rel: "stylesheet".href: "https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" #[]
-    ]
-    body.class: "bg-body-tertiary" [
-        header.class: "container py-5" [
-            nav.class: "d-flex flex-wrap justify-content-between gap-3 mb-5".aria_label: "Main navigation" [
-                a.class: "fw-bold text-success text-decoration-none".href: "#" "FIELDNOTES"
-                div.class: "d-flex gap-3" [a.href: "#posts" "Latest posts" a.href: "#about" "About"]
-            ]
-            h1.class: "display-4 fw-bold col-lg-9" "A little less code. A little more care."
-            p.class: "lead text-body-secondary" "Notes on building small, thoughtful software."
+  head [
+    meta.charset: "utf-8" #[]
+    meta.name: "viewport"
+      .content: "width=device-width, initial-scale=1" #[]
+
+    title "Fieldnotes — Bootstrap blog"
+
+    link.rel: "stylesheet"
+      .href: "https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" #[]
+  ]
+
+  body.class: "bg-body-tertiary" [
+    header.class: "container py-5" [
+      nav.class: "d-flex flex-wrap justify-content-between gap-3 mb-5"
+        .aria_label: "Main navigation" [
+          a.class: "fw-bold text-success text-decoration-none"
+            .href: "#" "FIELDNOTES"
+
+          div.class: "d-flex gap-3" [
+            a.href: "#posts" "Latest posts"
+            a.href: "#about" "About"
+          ]
         ]
-        main.class: "container pb-5" [
-            div.class: "row g-5" [
-                section.id: "posts".class: "col-lg-8".aria_label: "Latest posts" [
-                    post "Build a page from values" "2026-10-12" "HTML is a tree. Your code can read like one, too."
-                    post "Make the simple path reliable" "2026-10-19" "Escaping, small components, and tests that tell a story."
-                ]
-                aside.id: "about".class: "col-lg-4" [
-                    div.class: "p-4 bg-success-subtle rounded-3" [
-                        h2.class: "h4" "Hello, I'm Ana"
-                        p "I write about Arturo, the web, and the joy of making things."
-                        a.class: "btn btn-success".href: "mailto:ana@example.com" "Say hello"
-                    ]
-                ]
-            ]
-        ]
-        footer.class: "container border-top py-4 text-body-secondary" [small "© 2026 Fieldnotes. Made with Arturo."]
+
+      h1.class: "display-4 fw-bold col-lg-9"
+        "A little less code. A little more care."
+
+      p.class: "lead text-body-secondary"
+        "Notes on building small, thoughtful software."
     ]
+
+    main.class: "container pb-5" [
+      div.class: "row g-5" [
+        section.id: "posts"
+          .class: "col-lg-8"
+          .aria_label: "Latest posts" [
+            post "Build a page from values"
+              "2026-10-12"
+              "HTML is a tree. Your code can read like one, too."
+
+            post "Make the simple path reliable"
+              "2026-10-19"
+              "Escaping, small components, and tests that tell a story."
+          ]
+
+        aside.id: "about".class: "col-lg-4" [
+          div.class: "p-4 bg-success-subtle rounded-3" [
+            h2.class: "h4" "Hello, I'm Ana"
+
+            p "I write about Arturo, the web, and the joy of making things."
+
+            a.class: "btn btn-success"
+              .href: "mailto:ana@example.com" "Say hello"
+          ]
+        ]
+      ]
+    ]
+
+    footer.class: "container border-top py-4 text-body-secondary" [
+      small "© 2026 Fieldnotes. Made with Arturo."
+    ]
+  ]
 ]
