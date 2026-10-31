@@ -1,0 +1,14 @@
+import {src/html}!
+
+; Return typed markup so the parent preserves the component's HTML.
+card: function [name][
+    markup\article.class: "card" [h2 name p ["Hello, " strong name "!"]]
+]
+
+print fragment [
+    section [
+        loop ["Ana" "João"] 'person [card person]
+        if true [p "Registration is open"]
+        if false [p "Registration is closed"]
+    ]
+]

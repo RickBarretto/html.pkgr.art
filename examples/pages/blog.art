@@ -1,0 +1,40 @@
+import {src/html}!
+
+post: function [heading published summary][
+    markup\article [
+        header [h2 heading time.datetime: published published]
+        p summary
+    ]
+]
+
+print fragment html.lang: "en" [
+    head [
+        meta.charset: "utf-8" #[]
+        meta.name: "viewport".content: "width=device-width, initial-scale=1" #[]
+        meta.name: "description".content: "Notes on building small, thoughtful software." #[]
+        title "Fieldnotes — a developer's blog"
+        style [raw {
+            body { margin: auto; max-width: 72rem; padding: 2rem; font: 1.1rem/1.7 system-ui; color: #26352e; background: #faf8f2; }
+            a { color: #256044; } nav { display: flex; gap: 1rem; }
+            main { display: grid; grid-template-columns: minmax(0, 2fr) minmax(12rem, 1fr); gap: 3rem; }
+            article { border-bottom: 1px solid #ccd4c8; padding: 1rem 0 2rem; } time { color: #58665d; }
+            @media (max-width: 48rem) { main { grid-template-columns: 1fr; } }
+        }]
+    ]
+    body [
+        header [
+            p "FIELDNOTES / SMALL SOFTWARE, BIG IDEAS"
+            h1 "A little less code. A little more care."
+            nav.aria_label: "Main navigation" [a.href: "#posts" "Latest posts" a.href: "#about" "About"]
+        ]
+        main [
+            section.id: "posts".aria_label: "Latest posts" [
+                post "Build a page from values" "2026-10-12" "HTML is a tree. Your code can read like one, too."
+                post "Make the simple path reliable" "2026-10-19" "Escaping, small components, and tests that tell a story."
+                article [h2 "The next experiment" p ["Start with a " strong "small idea" ", then give it room to grow."]]
+            ]
+            aside.id: "about" [h2 "Hello, I'm Ana" p "I write about Arturo, the web, and the joy of making things." a.href: "mailto:ana@example.com" "Say hello"]
+        ]
+        footer [small "© 2026 Fieldnotes. Made with Arturo."]
+    ]
+]

@@ -1,0 +1,21 @@
+import {src/html}!
+
+print fragment html.lang: "en" [
+    head [
+        meta.charset: "utf-8" #[]
+        title "Contact & feedback"
+    ]
+    body [
+        h1 "Contact us"
+        form.method: "post" [
+            label.for: "email" "Email"
+            input.id: "email".name: "email".required: true.type: "email" #[]
+            button.type: "submit" "Send"
+        ]
+        table [
+            caption "Opening hours"
+            thead [tr [th "Day" th "Hours"]]
+            tbody [tr [td "Monday" td "09:00–17:00"]]
+        ]
+    ]
+]
