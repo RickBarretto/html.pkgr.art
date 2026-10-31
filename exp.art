@@ -1,15 +1,2 @@
-import.verbose {src/html}!
-
-
-print html [
-    head [
-        title "Hello"
-        meta #[name: "twitter:card"]
-    ]
-
-    body [
-        h1 "Title"
-        input #[name: "user" type: "username"]
-    ]
-
-]
+import {src/html}!
+print fragment [\html [\head [\title "Hello"] \body [\h1 "Hello, Arturo!"]]]
