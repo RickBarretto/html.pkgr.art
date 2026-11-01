@@ -185,11 +185,12 @@ executable is on `PATH` (`$HOME/.arturo/packages/bin` on Unix):
 ```sh
 arturo -p install unitt 3.1.1
 unitt                                # all suites, including example output
-unitt --suffix:element.spec.art       # one suite
+arturo spec/element.spec.art # one suite
 arturo --no-color examples/basics/scoped.art # small demo
 ```
 
-Unitt reads the test directory, file suffix, and Arturo binary from `config.art`.
+Unitt reads the spec directory, file suffix, and Arturo binary from `config.art`.
+Each spec can also run directly with Arturo and prints its own results.
 
 ## Sponsorship
 
