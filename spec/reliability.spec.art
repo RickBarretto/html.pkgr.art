@@ -85,4 +85,5 @@ describe "composition and isolation" [
     ]
 ]
 
-unless key? args 'filename -> unitt\report 'full
+if standalone? ::
+    unless key? args 'filename -> unitt\report 'full

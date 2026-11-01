@@ -10,4 +10,5 @@ loop select read.lines "examples/catalog.txt" 'entry [not? empty? entry] 'exampl
     ]
 ]
 
-unless key? args 'filename -> unitt\report 'full
+if standalone? ::
+    unless key? args 'filename -> unitt\report 'full

@@ -65,4 +65,5 @@ it "rejects scoped invalid content in isolated processes" [
         expects -> not? zero? result\code
     ]
 ]
-unless key? args 'filename -> unitt\report 'full
+if standalone? ::
+    unless key? args 'filename -> unitt\report 'full

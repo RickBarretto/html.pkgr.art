@@ -18,4 +18,5 @@ it "rejects unsupported preview arguments before starting a server" [
     expects -> not? zero? result\code
 ]
 
-unless key? args 'filename -> unitt\report 'full
+if standalone? ::
+    unless key? args 'filename -> unitt\report 'full
