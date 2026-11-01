@@ -1,4 +1,4 @@
-<h1 align="center">html</h1>
+<h1 align="center"><i>&lt;html /&gt;</i></h1>
 
 <p align="center">
     <i>Write HTML in Arturo. Skip the string juggling.</i>
