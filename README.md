@@ -184,13 +184,12 @@ executable is on `PATH` (`$HOME/.arturo/packages/bin` on Unix):
 
 ```sh
 arturo -p install unitt 3.1.1
-arturo --no-color test.art            # all suites, including example output
-arturo --no-color test.art element    # one suite
+unitt                                # all suites, including example output
+unitt --suffix:element.test.art       # one suite
 arturo --no-color examples/basics/scoped.art # small demo
 ```
 
-The test entry point uses `config.art` and preserves failure status for Unitt's
-uncaught-error path on Arturo 0.10.0.
+Unitt reads the test directory, file suffix, and Arturo binary from `config.art`.
 
 ## Sponsorship
 
