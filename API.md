@@ -10,7 +10,7 @@ import {src/html}!
 For a published release, use `import {html}!`. See the [README](README.md#installation)
 if you're trying this branch for the first time.
 
-[Entry points](#entry-points) · [Children](#children) · [Attributes](#attributes) · [Components](#components-and-control-flow) · [Raw HTML](#raw-html-scripts-and-styles) · [Scope](#name-collisions) · [Tags](#tag-reference) · [Migration](#migration)
+[Entry points](#entry-points) · [Children](#children) · [Attributes](#attributes) · [Components](#components-and-control-flow) · [Raw HTML](#raw-html-scripts-and-styles) · [Scope](#name-collisions) · [✨ Modern & emerging HTML](#-modern--emerging-html) · [Tags](#tag-reference) · [Migration](#migration)
 
 ## Entry Points
 
@@ -154,9 +154,56 @@ The DSL rejects malformed tag or attribute names, unsupported values, nonempty
 void elements, and ordinary script/style text.
 
 It serializes HTML5. It doesn't check whether an element belongs inside another
-element. HTML4, obsolete elements such as `param`, and SVG/MathML serialization
-aren't supported. Custom tags use the generic name rules; `element` doesn't add
-SVG/MathML behavior or check custom-element naming conventions.
+element. HTML4, obsolete or deprecated HTML APIs and tags such as `font`,
+`center`, and `param`, and SVG/MathML serialization aren't supported.
+The superseded `permission` experiment is an explicit exception, documented below.
+Custom tags use the generic name rules; `element` doesn't add SVG/MathML behavior,
+check custom-element naming conventions, or reject obsolete names. Emitting a
+name through `element` or `raw` does not imply support for its legacy behavior.
+
+## ✨ Modern & Emerging HTML
+
+**Build with the web's next ideas.** These helpers put modern interface features
+within the same familiar Arturo syntax. ✨
+
+| Helper | Interface feature | Status / reference |
+| --- | --- | --- |
+| `selectedcontent` | Mirrors the selected option inside a customizable select | [HTML Living Standard](https://html.spec.whatwg.org/multipage/form-elements.html#the-selectedcontent-element) |
+| `geolocation` | Browser-controlled location sharing | [Capability element](https://developer.chrome.com/blog/geolocation-html-element); browser availability varies |
+| `usermedia` | Camera and microphone access controls | [Emerging capability element](https://developer.chrome.com/blog/usermedia-html-element) |
+| `install` | Browser-controlled web app installation | [Experimental implementation](https://developer.chrome.com/blog/install-element-ot) |
+| `permission` | Generic permission control | [Superseded experiment](https://developer.chrome.com/blog/geolocation-html-element#from-generic-permission-to-specific-geolocation), retained intentionally |
+
+Inside `fragment [...]`, for example:
+
+```art
+select [
+  button [selectedcontent []]
+  option.value: "sparkles" "✨ Sparkles"
+  option.value: "stars" "🌟 Stars"
+]
+geolocation [button "Use my location"]
+usermedia [button "Enable camera and microphone"]
+install [a.href: "/app" "Open the app"]
+```
+
+These helpers serialize markup; browser support, styling, JavaScript event
+handling, and any required experimental flags or trial enrollment determine the
+resulting interface. Customizable selects also require the appropriate CSS.
+Child content in the capability controls can provide a fallback for browsers
+that don't recognize the element; a working fallback action needs its own
+implementation.
+
+For implementations of the earlier permission experiment:
+
+```art
+permission.type: "camera microphone" []
+```
+
+`permission` evolved into the specialized `geolocation` and `usermedia` controls.
+It is retained for experimentation, rather than as a supported legacy browser API.
+The helpers also appear in the [forms](#forms) and
+[interactive elements](#interactive-elements) references below.
 
 ## Migration
 
@@ -248,6 +295,7 @@ Examples are expressions inside `fragment [...]`.
 | `output` | Calculation result | Normal | `output "Text"` |
 | `progress` | Task progress | Normal | `progress "Text"` |
 | `select` | Selection control | Normal | `select []` |
+| `selectedcontent` | Selected option content in a customizable select | Normal | `selectedcontent []` |
 | `textarea` | Multiline text control | Normal | `textarea "Text"` |
 
 ### Inline text semantics
@@ -290,7 +338,16 @@ Examples are expressions inside `fragment [...]`.
 | --- | --- | --- | --- |
 | `details` | Disclosure widget | Normal | `details "Text"` |
 | `dialog` | Dialog | Normal | `dialog "Text"` |
+| `geolocation` | Location sharing control (experimental) | Normal | `geolocation []` |
+| `install` | Web app installation control (experimental) | Normal | `install []` |
+| `permission` | Generic permission control (superseded experimental proposal) | Normal | `permission.type: "camera microphone" []` |
 | `summary` | Disclosure heading | Normal | `summary "Text"` |
+| `usermedia` | Camera and microphone control (experimental) | Normal | `usermedia []` |
+
+The earlier experimental `permission` proposal evolved into the specialized
+`geolocation` and `usermedia` controls. Its helper is provided for experiments
+with implementations of that proposal; emitting the tag does not enable browser
+support. See [Chrome's capability elements background](https://developer.chrome.com/blog/geolocation-html-element).
 
 ### Document metadata
 

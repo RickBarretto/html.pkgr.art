@@ -43,7 +43,31 @@ print html [
 Tags become functions. Text is escaped for you. The result is compact HTML5,
 ready to print or write to a file. Requires **Arturo 0.10.0+**; no runtime dependencies.
 
-[Quick start](#quick-start) · [API reference](API.md) · [Examples](examples/README.md) · [Migration](API.md#migration)
+[Quick start](#quick-start) · [✨ What's next](#-modern--emerging-html) · [API reference](API.md) · [Examples](examples/README.md) · [Migration](API.md#migration)
+
+## ✨ Modern & Emerging HTML
+
+**Modern interfaces, written in Arturo.** Explore customizable selects, location
+sharing, camera and microphone controls, and web app installation with dedicated
+tag helpers. Bring a little of the web's next chapter to your next interface. ✨
+
+| Helper | What you can explore |
+| --- | --- |
+| `selectedcontent` | Rich selected-option content in customizable selects |
+| `geolocation` | Browser-controlled location sharing |
+| `usermedia` | Camera and microphone access controls |
+| `install` | A browser-controlled web app install button |
+| `permission` | The earlier generic permission-control experiment |
+
+These helpers are available now in the DSL; browser availability varies.
+`selectedcontent` is part of the HTML Living Standard; the capability controls
+include experimental proposals. `permission` is a deliberately retained
+experiment that evolved into `geolocation` and `usermedia`.
+See [examples and feature details](API.md#-modern--emerging-html).
+
+**Built for modern HTML.** HTML4 and obsolete or deprecated HTML APIs and tags,
+such as `font`, `center`, and `param`, are outside our supported API. The
+superseded `permission` experiment above is an explicit exception.
 
 ## Installation
 

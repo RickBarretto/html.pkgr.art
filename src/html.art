@@ -36,14 +36,14 @@ define :htmlDsl [
 
             ; Forms
             button datalist fieldset form input label legend meter optgroup
-            option output progress select textarea
+            option output progress select selectedcontent textarea
 
             ; Inline Text
             a abbr b bdi bdo br cite code data dfn em i kbd mark q s rp rt
             ruby samp small span strong sub sup time u var wbr
 
             ; Interactives
-            details dialog summary
+            details dialog geolocation install permission summary usermedia
 
             ; Metadata Content
             base link meta title style
