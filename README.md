@@ -185,7 +185,7 @@ executable is on `PATH` (`$HOME/.arturo/packages/bin` on Unix):
 ```sh
 arturo -p install unitt 3.1.1
 unitt                                # all suites, including example output
-unitt --suffix:element.test.art       # one suite
+unitt --suffix:element.spec.art       # one suite
 arturo --no-color examples/basics/scoped.art # small demo
 ```
 

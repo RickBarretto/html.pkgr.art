@@ -79,7 +79,7 @@ internet connection:
 ## Verify output
 
 ```sh
-unitt --suffix:examples.test.art
+unitt --suffix:examples.spec.art
 unitt
 ```
 
