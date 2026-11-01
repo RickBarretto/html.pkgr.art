@@ -192,6 +192,14 @@ arturo --no-color exp.art             # small demo
 The test entry point uses `config.art` and preserves failure status for Unitt's
 uncaught-error path on Arturo 0.10.0.
 
+## Sponsorship
+
+If this package helps you, consider [sponsoring RickBarretto](https://github.com/sponsors/RickBarretto)
+to support its development and maintenance.
+
+You can also support the [Arturo programming language](https://arturo-lang.io)
+by [sponsoring its creator, Yanis Zafirópulos (@drkameleon)](https://github.com/sponsors/drkameleon).
+
 ## License
 
 [MIT](LICENSE).
