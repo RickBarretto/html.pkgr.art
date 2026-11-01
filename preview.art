@@ -28,7 +28,11 @@ index: fragment html.lang: "en" [
     body [
         h1 "HTML DSL examples"
         p "Choose an example to preview its generated HTML."
-        ul [loop examplePaths 'examplePath [li [a.href: examplePath ++ ".html" examplePath]]]
+        ul [
+            loop examplePaths 'examplePath [
+                li [a.href: examplePath ++ ".html" examplePath]
+            ]
+        ]
         p "Framework examples load CSS from the internet. Chat replies are local demonstrations."
     ]
 ]

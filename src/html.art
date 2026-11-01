@@ -1,17 +1,27 @@
 ; Markup is serialized eagerly: blocks run once and generated markup stays distinct from text.
+
 define :htmlMarkup [
-    init: method [value :string][this\value: new value]
-    string: method [][this\value]
+    init: method [value :string] [
+        this\value: new value
+    ]
+
+    string: method [] [
+        this\value
+    ]
 ]
+
 define :htmlRaw is :htmlMarkup []
+
 define :htmlDocument is :htmlMarkup []
-escapeHtml: function [value :string][
+
+escapeHtml: function [value :string] [
     value: replace value "&" "&amp;"
     value: replace value "<" "&lt;"
     value: replace value ">" "&gt;"
     replace value {"} "&quot;"
 ]
-serializeHtml: function [value][
+
+serializeHtml: function [value] [
     if null? value [return ""]
     if is? :htmlMarkup value [return to :string value]
     ensure.that: "HTML children must be strings or markup" -> string? value
@@ -20,7 +30,7 @@ serializeHtml: function [value][
 
 define :htmlDsl [
 
-    init: method [][
+    init: method [] [
         this\tags: [
             ; Main
             body head
@@ -72,7 +82,7 @@ define :htmlDsl [
         ]
     ]
 
-    _process: method [content][
+    _process: method [content] [
         ; Bind helpers in this method scope; capture the owning object for nesting.
         target: this
         bindings: new this\tags
@@ -83,70 +93,102 @@ define :htmlDsl [
         loop bindings '_tag [
             helperBody: [target\element x]
             insert 'helperBody 1 to :literal _tag
-            if _tag = 'element [helperBody: [target\element tag x]]
-            if _tag = 'raw [helperBody: [target\raw x]]
-            if _tag = 'html [helperBody: [target\html x]]
+            if _tag = 'element [
+                helperBody: [target\element tag x]
+            ]
+            if _tag = 'raw [
+                helperBody: [target\raw x]
+            ]
+            if _tag = 'html [
+                helperBody: [target\html x]
+            ]
             helperArgs: (_tag = 'element)? [[tag x]] [[x]]
             let to :literal _tag function.import: [target] helperArgs helperBody
         ]
         @content
     ]
 
-    kebab: method [content :string][
+    kebab: method [content :string] [
         replace content "_" "-"
     ]
 
-    raw: method.public [value :string][to :htmlRaw @[value]]
+    raw: method.public [value :string] [
+        to :htmlRaw @[value]
+    ]
 
-    element: method.public [tag :string :literal content][
+    element: method.public [tag :string :literal content] [
         ; Empty runtime loops can leave nulls; expose exactly one markup value.
         last @[\_element tag content]
     ]
 
-    _element: method [tag :string :literal content][
+    _element: method [tag :string :literal content] [
         tag: lower to :string tag
         ensure.that: "Invalid HTML tag name" -> match? tag {^[a-z][a-z0-9-]*$}
+
         normalized: #[]
         if dictionary? content [
-            loop content [key value][normalized\[\kebab lower to :string key]: value]
+            loop content [key value] [
+                normalized\[\kebab lower to :string key]: value
+            ]
         ]
-        loop attrs [key value][normalized\[\kebab lower to :string key]: value]
+        loop attrs [key value] [
+            normalized\[\kebab lower to :string key]: value
+        ]
+
         attributes: ""
         loop sort keys normalized 'key [
             ensure.that: "Invalid HTML attribute name" -> match? key {^[a-z_:][a-z0-9_.:-]*$}
             value: normalized\[key]
             unless null? value [
                 ensure.that: "Unsupported attribute value" -> in? type value [:string :literal :integer :floating :logical]
-                boolean: in? key ["disabled" "checked" "selected" "multiple" "required" "readonly" "autofocus" "hidden" "open" "controls" "autoplay" "loop" "muted" "novalidate" "formnovalidate" "reversed" "ismap" "defer" "async" "allowfullscreen" "inert" "itemscope" "nomodule" "playsinline" "default" "disablepictureinpicture" "disableremoteplayback" "shadowrootclonable" "shadowrootdelegatesfocus" "shadowrootserializable"]
+                boolean: in? key [
+                    "disabled" "checked" "selected" "multiple" "required"
+                    "readonly" "autofocus" "hidden" "open" "controls"
+                    "autoplay" "loop" "muted" "novalidate" "formnovalidate"
+                    "reversed" "ismap" "defer" "async" "allowfullscreen"
+                    "inert" "itemscope" "nomodule" "playsinline" "default"
+                    "disablepictureinpicture" "disableremoteplayback" "shadowrootclonable" "shadowrootdelegatesfocus" "shadowrootserializable"
+                ]
                 switch and? boolean logical? value [
                     if value [attributes: attributes ++ " " ++ key]
-                ][
+                ] [
                     attributes: attributes ++ " " ++ key ++ {="} ++ (escapeHtml to :string value) ++ {"}
                 ]
             ]
         ]
+
         children: []
         unless dictionary? content [
             children: (block? content)? [\_process content] [@[content]]
         ]
+
         ; Avoid built-ins whose official tag names are rebound by the caller.
         filtered: []
-        ignored: @[loop children 'child [unless null? child [append 'filtered child]]]
+        ignored: @[
+            loop children 'child [
+                unless null? child [append 'filtered child]
+            ]
+        ]
         children: filtered
+
         void: in? tag ["area" "base" "br" "col" "embed" "hr" "img" "input" "link" "meta" "source" "track" "wbr"]
         if void [
             ensure.that: "Void elements cannot have children" -> or? empty? children children = [""]
             return to :htmlMarkup @[~"<|tag||attributes|>"]
         ]
+
         if in? tag ["script" "style"] [
             loop children 'child [ensure.that: "Use markup raw for trusted script/style content" -> or? child = "" is? :htmlRaw child]
         ]
+
         rendered: new ""
-        ignored: @[loop children 'child [rendered: rendered ++ serializeHtml child]]
+        ignored: @[
+            loop children 'child [rendered: rendered ++ serializeHtml child]
+        ]
         to :htmlMarkup @[~"<|tag||attributes|>|rendered|</|tag|>"]
     ]
 
-    html: method.public [page][
+    html: method.public [page] [
         html4: attr 'html4
         ensure.that: "HTML4 mode is no longer supported" -> null? html4
         document: "<!DOCTYPE html>" ++ to :string \element 'html page
@@ -156,11 +198,20 @@ define :htmlDsl [
 ]
 
 markup: to :htmlDsl []
-fragment: $[content][
+
+fragment: $[content] [
     values: (block? content)? [markup\_process content] [@[content]]
     rendered: new ""
-    ignored: @[loop values 'value [rendered: rendered ++ serializeHtml value]]
+    ignored: @[
+        loop values 'value [rendered: rendered ++ serializeHtml value]
+    ]
     to :htmlMarkup @[rendered]
 ]!
-html: function [content][markup\html content]
-body: function [content][markup\body content]
+
+html: function [content] [
+    markup\html content
+]
+
+body: function [content] [
+    markup\body content
+]

@@ -1,15 +1,25 @@
 import.version: 3.1.1 {unitt}!
 import {src/html}!
+
 other: to :htmlDsl []!
 
 describe "serialization boundaries" [
+
     it "handles empty content and preserves whitespace and Unicode" [
         expects -> (to :string fragment []) = ""
         expects -> (to :string fragment [\div []]) = "<div></div>"
-        expects -> (to :string fragment [\pre "  Olá\n world  "]) = "<pre>  Olá\n world  </pre>"
-        expects -> (to :string fragment [\p ["Hello " \strong "world" "!"]]) = "<p>Hello <strong>world</strong>!</p>"
-        expects -> (to :string fragment [\textarea "<&>"]) = "<textarea>&lt;&amp;&gt;</textarea>"
+
+        expects -> (to :string fragment [\pre "  Olá\n world  "]) 
+            = "<pre>  Olá\n world  </pre>"
+
+        expects -> 
+            (to :string fragment [\p ["Hello " \strong "world" "!"]]) 
+            = "<p>Hello <strong>world</strong>!</p>"
+
+        expects -> (to :string fragment [\textarea "<&>"]) 
+            = "<textarea>&lt;&amp;&gt;</textarea>"
     ]
+
     it "rejects invalid names, children, and attribute values" [
         ; Isolate runtime exceptions: caught method errors affect subsequent
         ; method calls on the supported Arturo build.
@@ -25,11 +35,12 @@ describe "serialization boundaries" [
             {fragment [\html.html4 []]}
         ] 'code [
             command: "import {src/html}! " ++ code
+
             result: execute.code.args: @["--no-color" "-e" command] "arturo"
             expects -> not? zero? result\code
         ]
     ]
-    
+
     it "serializes every void element without a closing tag" [
         loop [area base br col embed hr img input link meta source track wbr] 'tag [
             result: to :string markup\element to :literal tag #[]
@@ -37,53 +48,86 @@ describe "serialization boundaries" [
             expects.be: 'equal? @[result expected]
         ]
     ]
+
     it "keeps trusted raw values distinct from text and normal markup" [
         rawValue: markup\raw "<b>trusted</b>"
+
         expects -> (to :string fragment rawValue) = "<b>trusted</b>"
         expects -> (to :string fragment "<b>text</b>") = "&lt;b&gt;text&lt;/b&gt;"
         expects -> (to :string fragment [\script ""]) = "<script></script>"
-        expects -> (to :string fragment [\style [\raw "p > b {color: red}"]]) = "<style>p > b {color: red}</style>"
+        expects -> (to :string fragment [\style [\raw "p > b {color: red}"]]) 
+            = "<style>p > b {color: red}</style>"
+        
         expects -> (to :string fragment [\br []]) = "<br>"
     ]
 ]
 
 describe "composition and isolation" [
+
     it "renders repeatedly without repeating effects or retaining mutable inputs" [
         source: "first"
         node: markup\element "p" source
         source: "second"
+
         expects -> (to :string fragment node) = "<p>first</p>"
         expects -> (to :string fragment node) = "<p>first</p>"
+
         calls: []
         node: markup\element "div" [append 'calls "called" "text"]
+
         expects -> (to :string fragment node) = "<div>text</div>"
         expects -> (to :string fragment node) = "<div>text</div>"
         expects -> calls = ["called"]
     ]
+
     it "does not leak attributes between elements or instances" [
         firstNode: markup\element.id: "first" "p" ""
         secondNode: markup\element "p" ""
+
         expects -> (to :string fragment firstNode) = {<p id="first"></p>}
         expects -> (to :string fragment secondNode) = "<p></p>"
+
         independent: to :string other\element "p" ""
         expects.be: 'equal? @[independent "<p></p>"]
     ]
+
     it "supports custom elements, loops, and conditionals" [
         result: fragment [
             loop ["one" "two"] 'item [\element "my-item" item]
             if true [\p "yes"]
         ]
-        expects -> (to :string result) = "<my-item>one</my-item><my-item>two</my-item><p>yes</p>"
+
+        expects -> (to :string result) 
+            = "<my-item>one</my-item><my-item>two</my-item><p>yes</p>"
     ]
+
     it "normalizes duplicate keys before dynamic overrides" [
-        expects -> (to :string fragment [\p.data_id: "new" #["data-id": "old"]]) = {<p data-id="new"></p>}
-        expects -> (to :string fragment [\input #[title: null value: "" tabindex: 0]]) = {<input tabindex="0" value="">}
-        expects -> (to :string fragment [\p.data_id: "new" #["DATA-ID": "old"]]) = {<p data-id="new"></p>}
-        expects -> (to :string fragment [\p.title: null #[title: "old"]]) = "<p></p>"
-        expects -> (to :string fragment [\input #[disabled: true required: false]]) = "<input disabled>"
-        expects -> (to :string fragment [\p #[data_id: 'example tabindex: 2 title: 1.5]]) = {<p data-id="example" tabindex="2" title="1.5"></p>}
+        expects -> 
+            (to :string fragment [\p.data_id: "new" #["data-id": "old"]]) 
+            = {<p data-id="new"></p>}
+        
+        expects -> 
+            (to :string fragment [\input #[title: null value: "" tabindex: 0]]) 
+            = {<input tabindex="0" value="">}
+        
+        expects -> 
+            (to :string fragment [\p.data_id: "new" #["DATA-ID": "old"]]) 
+            = {<p data-id="new"></p>}
+        
+        expects -> 
+            (to :string fragment [\p.title: null #[title: "old"]]) 
+            = "<p></p>"
+
+        expects -> 
+            (to :string fragment [\input #[disabled: true required: false]])
+            = "<input disabled>"
+
+        expects -> 
+            (to :string fragment [\p #[data_id: 'example tabindex: 2 title: 1.5]]) 
+            = {<p data-id="example" tabindex="2" title="1.5"></p>}
     ]
 ]
 
 if standalone? ::
-    unless key? args 'filename -> unitt\report 'full
+    unless key? args 'filename 
+        -> unitt\report 'full

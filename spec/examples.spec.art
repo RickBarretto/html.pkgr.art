@@ -3,12 +3,17 @@ import.version: 3.1.1 {unitt}!
 ; Execute each example as users do, checking status and exact stdout.
 loop select read.lines "examples/catalog.txt" 'entry [not? empty? entry] 'exampleName [
     it "matches expected output: " ++ exampleName [
-        result: execute.code.args: @["--no-color" "examples/" ++ exampleName ++ ".art"] "arturo"
+        result: execute
+            .code.args: @["--no-color" "examples/" ++ exampleName ++ ".art"] 
+            "arturo"
+
         expected: read "examples/expected/" ++ exampleName ++ ".html"
+
         expects -> zero? result\code
         expects.be: 'equal? @[result\output expected]
     ]
 ]
 
 if standalone? ::
-    unless key? args 'filename -> unitt\report 'full
+    unless key? args 'filename 
+        -> unitt\report 'full
