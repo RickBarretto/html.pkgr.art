@@ -79,8 +79,8 @@ internet connection:
 ## Verify output
 
 ```sh
-unitt --suffix:examples.spec.art
-unitt
+arturo spec/examples.spec.art # example output suite
+unitt                                   # all suites
 ```
 
 The example suite executes every listed script in its own process and compares
