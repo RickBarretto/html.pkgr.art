@@ -71,6 +71,24 @@ superseded `permission` experiment above is an explicit exception.
 
 ## Installation
 
+### 1.0 release candidate
+
+`v1.0.0-rc.1` is a prerelease for feedback before 1.0. The core API intended
+to remain compatible throughout 1.x covers `html`, `body`, `fragment`, the
+`markup` DSL object, standard tag helpers, custom elements, attribute
+serialization, escaping, and explicit trusted `raw` content.
+
+Experimental browser tag helpers remain available, but their browser behavior
+and underlying proposals may change. They are not a promise of browser support.
+
+To try the candidate directly:
+
+```sh
+git clone --branch v1.0.0-rc.1 https://github.com/RickBarretto/html.pkgr.art.git
+cd html.pkgr.art
+arturo --no-color exp.art
+```
+
 ```sh
 arturo -p install html
 ```
