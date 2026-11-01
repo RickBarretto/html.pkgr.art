@@ -19,6 +19,8 @@ jobs:
         run: |
           echo "$HOME/.arturo/bin" >> "$GITHUB_PATH"
           echo "$HOME/.arturo/packages/bin" >> "$GITHUB_PATH"
-      - run: arturo -p install unitt 3.1.1
-      - run: arturo --no-color test.art
+      - name: Install Unitt
+        run: arturo -p install unitt 3.1.1
+      - name: Test package
+        run: unitt
       - run: arturo --no-color examples/basics/scoped.art

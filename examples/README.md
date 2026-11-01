@@ -79,8 +79,8 @@ internet connection:
 ## Verify output
 
 ```sh
-arturo --no-color test.art examples
-arturo --no-color test.art
+unitt --suffix:examples.test.art
+unitt
 ```
 
 The example suite executes every listed script in its own process and compares
