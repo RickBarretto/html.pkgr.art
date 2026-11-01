@@ -1,6 +1,6 @@
 # HTML DSL API
 
-Write tags inside `html`, `body`, or `fragment` blocks. Use `markup\tag` outside them.
+Write HTML elements inside `html`, `body`, or `fragment` blocks. Use `markup\p` outside them.
 Examples on this page assume this import from the repository root:
 
 ```art
@@ -10,7 +10,7 @@ import {src/html}!
 For a published release, use `import {html}!`. See the [README](README.md#installation)
 if you're trying this branch for the first time.
 
-[Entry points](#entry-points) · [Children](#children) · [Attributes](#attributes) · [Components](#components-and-control-flow) · [Raw HTML](#raw-html-scripts-and-styles) · [Scope](#name-collisions) · [✨ Modern & emerging HTML](#-modern--emerging-html) · [Tags](#tag-reference) · [Migration](#migration)
+[Entry points](#entry-points) · [Children](#children) · [Attributes](#attributes) · [Components](#components-and-control-flow) · [Raw HTML](#raw-html-scripts-and-styles) · [Scope](#name-collisions) · [✨ Modern & emerging HTML](#-modern--emerging-html) · [Progress](#implementation-progress) · [HTML Elements](#html-elements-reference) · [Migration](#migration)
 
 ## Entry Points
 
@@ -19,8 +19,8 @@ if you're trying this branch for the first time.
 | `html content` | HTML document, starting with `<!DOCTYPE html>` |
 | `body content` | A `<body>` element |
 | `fragment content` | Markup with no wrapper |
-| `markup\p content` | A tag outside a child block |
-| `markup\element "my-widget" content` | A custom tag |
+| `markup\p content` | An HTML element outside a child block |
+| `markup\element "my-widget" content` | A custom element |
 | `markup\raw "<b>Trusted</b>"` | Markup with escaping turned off |
 | `to :string node` | A compact HTML string |
 
@@ -37,7 +37,7 @@ print html.lang: "en" [
 
 ## Children
 
-Every tag takes **one** content argument:
+Every element takes **one** content argument:
 
 | Content | What happens |
 | --- | --- |
@@ -45,7 +45,7 @@ Every tag takes **one** content argument:
 | `div [h2 "Hello" p "Welcome"]` | Evaluates the block and nests its markup |
 | `div fragment [p "Hello"]` | Nests existing markup without escaping it again |
 | `div #[class: "empty"]` | Uses the dictionary as attributes; no children |
-| `br []` | Emits an empty void tag: `<br>` |
+| `br []` | Emits an empty void element: `<br>` |
 
 Text escapes `&`, `<`, `>`, and double quotes. Only strings and markup can be
 children; `null` is ignored. Convert numbers with `to :string`.
@@ -58,7 +58,7 @@ print fragment [article -> div.class: "content" ["Hello"]]
 ; <article><div class="content">Hello</div></article>
 ```
 
-Void tags such as `input`, `img`, and `br` still need an argument. Pass `[]`,
+Void elements such as `input`, `img`, and `br` still need an argument. Pass `[]`,
 `""`, or an attribute dictionary. Nonempty content raises an error.
 
 ## Attributes
@@ -84,7 +84,7 @@ print fragment [
 | Attributes sort by normalized name | `.id: "x" .class: "y"` → `class="y" id="x"` |
 
 Values can be strings, literals, integers, floats, or logical values. Values are
-escaped just like text. There are no tag-specific shortcuts or positional attributes.
+escaped just like text. There are no element-specific shortcuts or positional attributes.
 
 ## Components and Control Flow
 
@@ -128,7 +128,7 @@ JavaScript, or CSS. Escaping text isn't a substitute for checking a link's URL.
 
 ## Name Collisions
 
-Inside child blocks, official tag names take precedence over caller bindings and
+Inside child blocks, official element names take precedence over caller bindings and
 built-ins. That includes `div`, `map`, `select`, and `input`.
 
 Need one of those built-ins? Save it under another name before entering the block.
@@ -145,19 +145,19 @@ print other\p "Hello"
 ```
 
 Each initialized object has the same helpers and scoped child evaluation.
-`markup\tags` contains the canonical tag inventory used to generate helpers;
+`markup\tags` contains the canonical element inventory used to generate helpers;
 `html` is provided separately as the document helper.
 
 ## Errors and Limits
 
-The DSL rejects malformed tag or attribute names, unsupported values, nonempty
+The DSL rejects malformed element or attribute names, unsupported values, nonempty
 void elements, and ordinary script/style text.
 
 It serializes HTML5. It doesn't check whether an element belongs inside another
-element. HTML4, obsolete or deprecated HTML APIs and tags such as `font`,
+element. HTML4, obsolete or deprecated HTML APIs and elements such as `font`,
 `center`, and `param`, and SVG/MathML serialization aren't supported.
 The superseded `permission` experiment is an explicit exception, documented below.
-Custom tags use the generic name rules; `element` doesn't add SVG/MathML behavior,
+Custom elements use the generic name rules; `element` doesn't add SVG/MathML behavior,
 check custom-element naming conventions, or reject obsolete names. Emitting a
 name through `element` or `raw` does not imply support for its legacy behavior.
 
@@ -217,20 +217,39 @@ Updating from the old API? Start here:
 | A fragment used as a string | `to :string fragment content` |
 | Intentional HTML passed as text | `markup\raw trustedHtml` |
 
-`html` is now a document function; `markup` is the public DSL object. Tags and
+`html` is now a document function; `markup` is the public DSL object. Elements and
 fragments return markup objects instead of strings. Print them directly or render
 with `to :string`. Nesting preserves markup; text is escaped.
 
-Use official tag names inside child blocks. Legacy backslash shorthand is no
+Use official element names inside child blocks. Legacy backslash shorthand is no
 longer the documented interface. There are no aliases or specialized positional
-attribute arguments. Void tags have no closing tag; dictionaries no longer
+attribute arguments. Void elements have no closing tag; dictionaries no longer
 request self-closing tags. HTML4 mode has been removed.
 
-## Tag Reference
+## Implementation Progress
 
-All supported tags are listed below, grouped by
+![HTML elements implemented: 117 of 117 (100%)](docs/element-coverage.svg)
+
+**117 / 117 documented HTML element helpers implemented (100%).** This measures the
+[HTML Elements Reference](#html-elements-reference) against the helpers in [src/html.art](src/html.art),
+including the separate `html` document helper and four experimental capability
+controls. It measures markup serialization; browser support and full HTML
+standard coverage are outside this count.
+
+Implemented DSL features:
+
+- [x] Documents, fragments, and custom elements
+- [x] Nested child blocks and reusable components
+- [x] Text and attribute escaping
+- [x] Attribute dictionaries, normalization, and boolean attributes
+- [x] Void elements and trusted script/style content
+- [x] Scoped element helpers and separate DSL objects
+
+## HTML Elements Reference
+
+All supported HTML elements are listed below, grouped by
 [MDN's HTML element categories](https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements).
-These groups help you find a tag; they don't enforce nesting rules.
+These groups help you find an element; they don't enforce nesting rules.
 
 References link to MDN, Google's web.dev guides or Chrome developer articles,
 and the WHATWG HTML Living Standard. Google guides may cover a group of related
@@ -248,34 +267,34 @@ Examples are expressions inside `fragment [...]`.
 
 ### Main root
 
-| Tag | Purpose | Content | Example | References |
+| HTML Element | Purpose | Content | Example | References |
 | --- | --- | --- | --- | --- |
 | `html` | HTML5 document root | Document | `html [body [p "Hello"]]` | [MDN](https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/html) · [Google](https://web.dev/learn/html/document-structure) · [WHATWG](https://html.spec.whatwg.org/multipage/semantics.html#the-html-element) |
 
 ### Document metadata and sectioning root
 
-| Tag | Purpose | Content | Example | References |
+| HTML Element | Purpose | Content | Example | References |
 | --- | --- | --- | --- | --- |
 | `body` | Document body | Normal | `body []` | [MDN](https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/body) · [Google](https://web.dev/learn/html/document-structure) · [WHATWG](https://html.spec.whatwg.org/multipage/sections.html#the-body-element) |
 | `head` | Document metadata | Normal | `head []` | [MDN](https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/head) · [Google](https://web.dev/learn/html/document-structure) · [WHATWG](https://html.spec.whatwg.org/multipage/semantics.html#the-head-element) |
 
 ### Web components
 
-| Tag | Purpose | Content | Example | References |
+| HTML Element | Purpose | Content | Example | References |
 | --- | --- | --- | --- | --- |
 | `slot` | Web component insertion point | Normal | `slot "Text"` | [MDN](https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/slot) · [Google](https://web.dev/learn/html/template) · [WHATWG](https://html.spec.whatwg.org/multipage/scripting.html#the-slot-element) |
 | `template` | Inert reusable template | Normal | `template "Text"` | [MDN](https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/template) · [Google](https://web.dev/learn/html/template) · [WHATWG](https://html.spec.whatwg.org/multipage/scripting.html#the-template-element) |
 
 ### Demarcating edits
 
-| Tag | Purpose | Content | Example | References |
+| HTML Element | Purpose | Content | Example | References |
 | --- | --- | --- | --- | --- |
 | `del` | Deleted text | Normal | `del "Text"` | [MDN](https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/del) · [Google](https://web.dev/learn/html/text-basics) · [WHATWG](https://html.spec.whatwg.org/multipage/edits.html#the-del-element) |
 | `ins` | Inserted text | Normal | `ins "Text"` | [MDN](https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/ins) · [Google](https://web.dev/learn/html/text-basics) · [WHATWG](https://html.spec.whatwg.org/multipage/edits.html#the-ins-element) |
 
 ### Embedded content
 
-| Tag | Purpose | Content | Example | References |
+| HTML Element | Purpose | Content | Example | References |
 | --- | --- | --- | --- | --- |
 | `embed` | External embedded content | Void | `embed #[]` | [MDN](https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/embed) · [Google](https://web.dev/learn/html/apis) · [WHATWG](https://html.spec.whatwg.org/multipage/iframe-embed-object.html#the-embed-element) |
 | `iframe` | Nested browsing context | Normal | `iframe "Text"` | [MDN](https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/iframe) · [Google](https://web.dev/learn/html/apis) · [WHATWG](https://html.spec.whatwg.org/multipage/iframe-embed-object.html#the-iframe-element) |
@@ -285,7 +304,7 @@ Examples are expressions inside `fragment [...]`.
 
 ### Forms
 
-| Tag | Purpose | Content | Example | References |
+| HTML Element | Purpose | Content | Example | References |
 | --- | --- | --- | --- | --- |
 | `button` | Action button | Normal | `button "Text"` | [MDN](https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/button) · [Google](https://web.dev/learn/html/forms) · [WHATWG](https://html.spec.whatwg.org/multipage/form-elements.html#the-button-element) |
 | `datalist` | Suggested input options | Normal | `datalist []` | [MDN](https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/datalist) · [Google](https://web.dev/learn/html/forms) · [WHATWG](https://html.spec.whatwg.org/multipage/form-elements.html#the-datalist-element) |
@@ -305,7 +324,7 @@ Examples are expressions inside `fragment [...]`.
 
 ### Inline text semantics
 
-| Tag | Purpose | Content | Example | References |
+| HTML Element | Purpose | Content | Example | References |
 | --- | --- | --- | --- | --- |
 | `a` | Hyperlink | Normal | `a "Text"` | [MDN](https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/a) · [Google](https://web.dev/learn/html/links) · [WHATWG](https://html.spec.whatwg.org/multipage/text-level-semantics.html#the-a-element) |
 | `abbr` | Abbreviation | Normal | `abbr "Text"` | [MDN](https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/abbr) · [Google](https://web.dev/learn/html/inline-text) · [WHATWG](https://html.spec.whatwg.org/multipage/text-level-semantics.html#the-abbr-element) |
@@ -339,7 +358,7 @@ Examples are expressions inside `fragment [...]`.
 
 ### Interactive elements
 
-| Tag | Purpose | Content | Example | References |
+| HTML Element | Purpose | Content | Example | References |
 | --- | --- | --- | --- | --- |
 | `details` | Disclosure widget | Normal | `details "Text"` | [MDN](https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/details) · [Google](https://web.dev/learn/html/details) · [WHATWG](https://html.spec.whatwg.org/multipage/interactive-elements.html#the-details-element) |
 | `dialog` | Dialog | Normal | `dialog "Text"` | [MDN](https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/dialog) · [Google](https://web.dev/learn/html/dialog) · [WHATWG](https://html.spec.whatwg.org/multipage/interactive-elements.html#the-dialog-element) |
@@ -351,12 +370,12 @@ Examples are expressions inside `fragment [...]`.
 
 The earlier experimental `permission` proposal evolved into the specialized
 `geolocation` and `usermedia` controls. Its helper is provided for experiments
-with implementations of that proposal; emitting the tag does not enable browser
+with implementations of that proposal; emitting the element does not enable browser
 support. See [Chrome's capability elements background](https://developer.chrome.com/blog/geolocation-html-element).
 
 ### Document metadata
 
-| Tag | Purpose | Content | Example | References |
+| HTML Element | Purpose | Content | Example | References |
 | --- | --- | --- | --- | --- |
 | `base` | Base URL | Void | `base #[]` | [MDN](https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/base) · [Google](https://web.dev/learn/html/metadata) · [WHATWG](https://html.spec.whatwg.org/multipage/semantics.html#the-base-element) |
 | `link` | External resource relationship | Void | `link #[]` | [MDN](https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/link) · [Google](https://web.dev/learn/html/metadata) · [WHATWG](https://html.spec.whatwg.org/multipage/semantics.html#the-link-element) |
@@ -366,7 +385,7 @@ support. See [Chrome's capability elements background](https://developer.chrome.
 
 ### Image and multimedia
 
-| Tag | Purpose | Content | Example | References |
+| HTML Element | Purpose | Content | Example | References |
 | --- | --- | --- | --- | --- |
 | `area` | Image map region | Void | `area #[]` | [MDN](https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/area) · [Google](https://web.dev/learn/html/images) · [WHATWG](https://html.spec.whatwg.org/multipage/image-maps.html#the-area-element) |
 | `audio` | Audio player | Normal | `audio "Text"` | [MDN](https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/audio) · [Google](https://web.dev/learn/html/audio-video) · [WHATWG](https://html.spec.whatwg.org/multipage/media.html#the-audio-element) |
@@ -377,7 +396,7 @@ support. See [Chrome's capability elements background](https://developer.chrome.
 
 ### Scripting
 
-| Tag | Purpose | Content | Example | References |
+| HTML Element | Purpose | Content | Example | References |
 | --- | --- | --- | --- | --- |
 | `canvas` | Script drawing surface | Normal | `canvas "Text"` | [MDN](https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/canvas) · [Google](https://web.dev/learn/html/apis) · [WHATWG](https://html.spec.whatwg.org/multipage/canvas.html#the-canvas-element) |
 | `noscript` | Scripting fallback | Normal | `noscript "Text"` | [MDN](https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/noscript) · [Google](https://web.dev/learn/html/apis) · [WHATWG](https://html.spec.whatwg.org/multipage/scripting.html#the-noscript-element) |
@@ -385,7 +404,7 @@ support. See [Chrome's capability elements background](https://developer.chrome.
 
 ### Content sectioning
 
-| Tag | Purpose | Content | Example | References |
+| HTML Element | Purpose | Content | Example | References |
 | --- | --- | --- | --- | --- |
 | `address` | Contact information | Normal | `address "Text"` | [MDN](https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/address) · [Google](https://web.dev/learn/html/headings-and-sections) · [WHATWG](https://html.spec.whatwg.org/multipage/sections.html#the-address-element) |
 | `article` | Self contained composition | Normal | `article "Text"` | [MDN](https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/article) · [Google](https://web.dev/learn/html/headings-and-sections) · [WHATWG](https://html.spec.whatwg.org/multipage/sections.html#the-article-element) |
@@ -406,7 +425,7 @@ support. See [Chrome's capability elements background](https://developer.chrome.
 
 ### Table content
 
-| Tag | Purpose | Content | Example | References |
+| HTML Element | Purpose | Content | Example | References |
 | --- | --- | --- | --- | --- |
 | `caption` | Table caption | Normal | `caption "Text"` | [MDN](https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/caption) · [Google](https://web.dev/learn/html/tables) · [WHATWG](https://html.spec.whatwg.org/multipage/tables.html#the-caption-element) |
 | `col` | Table column | Void | `col #[]` | [MDN](https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/col) · [Google](https://web.dev/learn/html/tables) · [WHATWG](https://html.spec.whatwg.org/multipage/tables.html#the-col-element) |
@@ -421,7 +440,7 @@ support. See [Chrome's capability elements background](https://developer.chrome.
 
 ### Text content
 
-| Tag | Purpose | Content | Example | References |
+| HTML Element | Purpose | Content | Example | References |
 | --- | --- | --- | --- | --- |
 | `blockquote` | Block quotation | Normal | `blockquote "Text"` | [MDN](https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/blockquote) · [Google](https://web.dev/learn/html/text-basics) · [WHATWG](https://html.spec.whatwg.org/multipage/grouping-content.html#the-blockquote-element) |
 | `dd` | Description details | Normal | `dd "Text"` | [MDN](https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/dd) · [Google](https://web.dev/learn/html/lists) · [WHATWG](https://html.spec.whatwg.org/multipage/grouping-content.html#the-dd-element) |

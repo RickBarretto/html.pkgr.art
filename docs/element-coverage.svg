@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="480" height="56" viewBox="0 0 480 56" role="img" aria-labelledby="title desc">
+  <title id="title">HTML elements: 117 of 117 implemented (100%)</title>
+  <desc id="desc">All documented HTML element helpers are implemented for markup serialization.</desc>
+  <rect width="480" height="56" rx="8" fill="#162032"/>
+  <g fill="#ffffff" font-family="system-ui, sans-serif" font-size="13">
+    <text x="16" y="22">HTML elements implemented</text>
+    <text x="464" y="22" text-anchor="end">117 / 117 · 100%</text>
+  </g>
+  <rect x="16" y="34" width="448" height="8" rx="4" fill="#34d399"/>
+</svg>
