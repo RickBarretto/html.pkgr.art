@@ -86,7 +86,7 @@ To try the candidate directly:
 ```sh
 git clone --branch v1.0.0-rc.1 https://github.com/RickBarretto/html.pkgr.art.git
 cd html.pkgr.art
-arturo --no-color exp.art
+arturo --no-color examples/basics/scoped.art
 ```
 
 ```sh
@@ -186,7 +186,7 @@ executable is on `PATH` (`$HOME/.arturo/packages/bin` on Unix):
 arturo -p install unitt 3.1.1
 arturo --no-color test.art            # all suites, including example output
 arturo --no-color test.art element    # one suite
-arturo --no-color exp.art             # small demo
+arturo --no-color examples/basics/scoped.art # small demo
 ```
 
 The test entry point uses `config.art` and preserves failure status for Unitt's
