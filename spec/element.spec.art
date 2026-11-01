@@ -14,4 +14,5 @@ it "serializes booleans and merges attributes" [
 it "supports explicit raw content" [
     expects -> (to :string fragment [\script [\raw "a < b;"]]) = "<script>a < b;</script>"
 ]
-unless key? args 'filename -> unitt\report 'full
+if standalone? ::
+    unless key? args 'filename -> unitt\report 'full

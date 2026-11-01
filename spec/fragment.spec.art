@@ -24,4 +24,5 @@ it "captures fragment effects once and distinguishes rendered strings from marku
     expects -> calls = ["once"]
     expects -> (to :string fragment [text]) = "&lt;span&gt;&amp;lt;&amp;amp;&amp;gt;&lt;/span&gt;"
 ]
-unless key? args 'filename -> unitt\report 'full
+if standalone? ::
+    unless key? args 'filename -> unitt\report 'full
