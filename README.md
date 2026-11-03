@@ -28,17 +28,9 @@
 
 ## At a Glance
 
-```art
-import {src/html}!
-
-print html [
-  head [title "Hello"]
-  body [
-    h1.class: "title" "Hello, Arturo!"
-    p "HTML without string templates."
-  ]
-]
-```
+<p align="center">
+    <img src="./terminal.svg" width="720" alt="Arturo SQL query filtering programming languages released since 2000, with Arturo, Rust and Go displayed in a tabular terminal table." />
+</p>
 
 Tags become functions. Text is escaped for you. The result is compact HTML5,
 ready to print or write to a file. Requires **Arturo 0.10.0+**; no runtime dependencies.
