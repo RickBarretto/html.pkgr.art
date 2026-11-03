@@ -54,7 +54,7 @@
 </text>
 <text x="40" y="423" font-family="&#x27;DejaVu Sans Mono&#x27;, monospace" font-size="20" xml:space="preserve">
 <tspan x="40" fill="#55ff00">% </tspan>
-<tspan x="64.082" fill="#f5edf5">cat output.html</tspan>
+<tspan x="64.082" fill="#f5edf5">arturo hello.html</tspan>
 </text>
 <text x="40" y="450" font-family="&#x27;DejaVu Sans Mono&#x27;, monospace" font-size="20" xml:space="preserve">
 <tspan x="40" fill="#f5edf5">&lt;html&gt;</tspan>
